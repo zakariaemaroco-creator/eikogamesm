@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eiko Games 🎮</title>
+
+  <style>
+    body {
+      background: #0f172a;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+      margin: 0;
+    }
+
+    h1 {
+      background: #22c55e;
+      padding: 15px;
+      margin: 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .game {
+      background: #1e293b;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 12px;
+      width: 80%;
+      font-size: 16px;
+      background: #22c55e;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+
+    @media (min-width: 600px) {
+      button {
+        width: 200px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎮 Eiko Games</h1>
+
+<div class="container">
+
+  <div class="game">
+    <h2>🧠 Puzzle</h2>
+    <button onclick="window.open('https://www.crazygames.com/t/puzzle')">
+      Play
+    </button>
+  </div>
+
+  <div class="game">
+    <h2>🥊 Fighting</h2>
+    <button onclick="window.open('https://www.crazygames.com/t/fighting')">
+      Play
+    </button>
+  </div>
+
+  <div class="game">
+    <h2>🚗 Racing</h2>
+    <button onclick="window.open('https://www.crazygames.com/t/car')">
+      Play
+    </button>
+  </div>
+
+  <div class="game">
+    <h2>⚽ Sport</h2>
+    <button onclick="window.open('https://www.crazygames.com/t/sports')">
+      Play
+    </button>
+  </div>
+
+</div>
+
+</body>
+</html>
