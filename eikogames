@@ -1,138 +1,228 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eiko Games 👑</title>
+<title>Eiko Games 👑 | عالم الألعاب</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #020617;
-  color: white;
-}
+  :root {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-color: #f8fafc;
+    --accent-color: #22c55e;
+    --header-bg: #16a34a;
+  }
 
-/* HEADER */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  background: #22c55e;
-}
+  .light-mode {
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --text-color: #0f172a;
+    --header-bg: #22c55e;
+  }
 
-#toggle {
-  background: white;
-  border: none;
-  padding: 8px;
-  border-radius: 8px;
-}
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+  }
 
-/* SEARCH */
-.search {
-  text-align: center;
-  margin: 15px;
-}
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+    background: var(--header-bg);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
 
-.search input {
-  width: 80%;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-}
+  header h2 { margin: 0; font-size: 1.5rem; }
 
-/* GAME CARD */
-.game {
-  margin: 15px;
-  background: #1e293b;
-  border-radius: 15px;
-  padding: 10px;
-}
+  #toggle {
+    background: white;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
 
-/* IFRAME */
-iframe {
-  width: 100%;
-  height: 500px;
-  border: none;
-  border-radius: 15px;
-}
+  /* Search Section */
+  .search-container {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(180deg, var(--header-bg) 0%, transparent 100%);
+  }
 
-/* DARK MODE */
-.dark {
-  background: #fff;
-  color: black;
-}
+  .search-container input {
+    width: 90%;
+    max-width: 500px;
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: 2px solid transparent;
+    outline: none;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: 0.3s;
+  }
 
-footer {
-  text-align: center;
-  padding: 15px;
-}
+  .search-container input:focus {
+    border-color: var(--accent-color);
+    width: 95%;
+  }
+
+  /* Games Grid */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .game-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  }
+
+  .game-card h3 {
+    padding: 15px;
+    margin: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Responsive Iframe */
+  .iframe-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  }
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  footer {
+    text-align: center;
+    padding: 3rem 1rem;
+    opacity: 0.8;
+  }
+
+  /* No Results Message */
+  #no-results {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+  }
+
 </style>
 </head>
-
 <body>
 
 <header>
-  <h2>🎮 Eiko Games</h2>
-  <button id="toggle">🌙</button>
+  <h2>👑 Eiko Games</h2>
+  <button id="toggle" title="تغيير الوضع">🌙</button>
 </header>
 
-<div class="search">
-  <input type="text" placeholder="🔍 Search..." onkeyup="searchGame(this.value)">
+<div class="search-container">
+  <input type="text" id="searchInput" placeholder="ابحث عن لعبتك المفضلة..." onkeyup="searchGame()">
 </div>
 
-<!-- GAMES -->
+<div class="games-grid" id="gamesGrid">
+  <div class="game-card">
+    <h3>🚇 Subway Runner</h3>
+    <div class="iframe-wrapper">
+      <iframe src="https://games.crazygames.com/en_US/subway-surfers/index.html" loading="lazy"></iframe>
+    </div>
+  </div>
 
-<div class="game">
-  <h3>🚇 Subway Runner</h3>
-  <iframe src="https://games.crazygames.com/en_US/subway-surfers/index.html"></iframe>
+  <div class="game-card">
+    <h3>⚽ Football Match</h3>
+    <div class="iframe-wrapper">
+      <iframe src="https://games.crazygames.com/en_US/football-heads-2023/index.html" loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <div class="game-card">
+    <h3>⚽ Soccer Skills</h3>
+    <div class="iframe-wrapper">
+      <iframe src="https://games.crazygames.com/en_US/soccer-skills-euro-cup/index.html" loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <div class="game-card">
+    <h3>🚗 Speed Racer</h3>
+    <div class="iframe-wrapper">
+      <iframe src="https://html5games.com/Game/Speed-Racer/" loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <div class="game-card">
+    <h3>🧠 Puzzle 2048</h3>
+    <div class="iframe-wrapper">
+      <iframe src="https://html5games.com/Game/2048/" loading="lazy"></iframe>
+    </div>
+  </div>
 </div>
 
-<div class="game">
-  <h3>⚽ Football Match</h3>
-  <iframe src="https://games.crazygames.com/en_US/football-heads-2023/index.html"></iframe>
-</div>
-
-<div class="game">
-  <h3>⚽ Soccer Skills</h3>
-  <iframe src="https://games.crazygames.com/en_US/soccer-skills-euro-cup/index.html"></iframe>
-</div>
-
-<div class="game">
-  <h3>⚽ Penalty Shootout</h3>
-  <iframe src="https://html5games.com/Game/Penalty-Shootout/"></iframe>
-</div>
-
-<div class="game">
-  <h3>🚗 Racing Game</h3>
-  <iframe src="https://html5games.com/Game/Speed-Racer/"></iframe>
-</div>
-
-<div class="game">
-  <h3>🧠 Puzzle 2048</h3>
-  <iframe src="https://html5games.com/Game/2048/"></iframe>
-</div>
+<div id="no-results">لم يتم العثور على ألعاب بهذا الاسم 😅</div>
 
 <footer>
-👑 Made by Zakariae - Eiko Games
+  <p>كل الحقوق محفوظة لـ <strong>Zakariae - Eiko Games</strong> © 2026</p>
 </footer>
 
 <script>
+  // تحسين البحث
+  function searchGame() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.game-card');
+    const noResults = document.getElementById('no-results');
+    let hasResults = false;
 
-/* SEARCH */
-function searchGame(value){
-  let games = document.querySelectorAll(".game");
-  games.forEach(game=>{
-    let title = game.innerText.toLowerCase();
-    game.style.display = title.includes(value.toLowerCase()) ? "block":"none";
-  });
-}
+    cards.forEach(card => {
+      const title = card.querySelector('h3').innerText.toLowerCase();
+      if (title.includes(input)) {
+        card.style.display = "block";
+        hasResults = true;
+      } else {
+        card.style.display = "none";
+      }
+    });
 
-/* DARK MODE */
-document.getElementById("toggle").onclick = () => {
-  document.body.classList.toggle("dark");
-}
+    noResults.style.display = hasResults ? "none" : "block";
+  }
 
+  // تحسين وضع الليل/النهار
+  const toggleBtn = document.getElementById('toggle');
+  toggleBtn.onclick = () => {
+    document.body.classList.toggle('light-mode');
+    toggleBtn.innerText = document.body.classList.contains('light-mode') ? "☀️" : "🌙";
+  };
 </script>
 
 </body>
