@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eiko Games 👑 TOP 1</title>
+<title>Eiko Games 👑</title>
 
 <style>
 :root {
@@ -60,7 +60,6 @@ header {
   position:relative;
   border-radius:15px;
   overflow:hidden;
-  cursor:pointer;
   transition:0.3s;
 }
 
@@ -91,29 +90,19 @@ header {
   opacity:1;
 }
 
+/* PLAY */
 .play {
   background:var(--green);
-  border:none;
+  color:white;
   padding:10px 20px;
   border-radius:10px;
+  text-decoration:none;
 }
 
 /* TITLE */
 .title {
   padding:10px;
   text-align:center;
-}
-
-/* BADGE */
-.badge {
-  position:absolute;
-  top:10px;
-  left:10px;
-  background:red;
-  color:white;
-  padding:5px 10px;
-  border-radius:10px;
-  font-size:12px;
 }
 
 /* FAVORITE */
@@ -123,30 +112,6 @@ header {
   right:10px;
   font-size:20px;
   cursor:pointer;
-}
-
-/* PLAYER */
-#player {
-  position:fixed;
-  inset:0;
-  background:black;
-  display:none;
-}
-
-#player iframe {
-  width:100%;
-  height:100%;
-  border:none;
-}
-
-#close {
-  position:absolute;
-  top:20px;
-  right:20px;
-  background:red;
-  color:white;
-  border:none;
-  padding:10px;
 }
 
 /* NO */
@@ -165,23 +130,35 @@ header {
 </header>
 
 <div class="search">
-<input type="text" placeholder="ابحث..." onkeyup="search(this.value)">
+<input type="text" placeholder="ابحث عن لعبة..." onkeyup="search(this.value)">
 </div>
 
 <div class="grid">
 
 <!-- GAME -->
 <div class="card" data-name="subway">
-<span class="badge">🔥</span>
 <span class="fav" onclick="fav(event,this)">🤍</span>
 
 <img src="https://i.imgur.com/7yUvePI.jpg" class="thumb">
 
 <div class="overlay">
-<button class="play" onclick="playGame(event,'https://html5.gamedistribution.com/3938449c286e41429976722238495a43/')">▶️ Play</button>
+<a href="https://ubg100.github.io/games/subway-surfers/" target="_blank" class="play">▶️ Play</a>
 </div>
 
-<div class="title">Subway</div>
+<div class="title">Subway Surfers</div>
+</div>
+
+<!-- GAME -->
+<div class="card" data-name="drift">
+<span class="fav" onclick="fav(event,this)">🤍</span>
+
+<img src="https://i.imgur.com/8Qf6F9G.jpg" class="thumb">
+
+<div class="overlay">
+<a href="https://ubg100.github.io/games/drift-boss/" target="_blank" class="play">▶️ Play</a>
+</div>
+
+<div class="title">Drift Boss</div>
 </div>
 
 <!-- GAME -->
@@ -191,40 +168,34 @@ header {
 <img src="https://i.imgur.com/T8pQK6G.png" class="thumb">
 
 <div class="overlay">
-<button class="play" onclick="playGame(event,'https://play2048.co/')">▶️ Play</button>
+<a href="https://play2048.co/" target="_blank" class="play">▶️ Play</a>
 </div>
 
 <div class="title">2048</div>
+</div>
+
+<!-- GAME -->
+<div class="card" data-name="1v1">
+<span class="fav" onclick="fav(event,this)">🤍</span>
+
+<img src="https://i.imgur.com/3ZQ3Z6p.jpg" class="thumb">
+
+<div class="overlay">
+<a href="https://ubg100.github.io/games/1v1-lol/" target="_blank" class="play">▶️ Play</a>
+</div>
+
+<div class="title">1v1.LOL</div>
 </div>
 
 </div>
 
 <div id="no">😅 لا توجد نتائج</div>
 
-<!-- PLAYER -->
-<div id="player">
-<button id="close" onclick="closeGame()">❌</button>
-<iframe id="gameFrame"></iframe>
-</div>
-
 <script>
-
-/* PLAY */
-function playGame(e,src){
-  e.stopPropagation();
-  document.getElementById("player").style.display="block";
-  document.getElementById("gameFrame").src=src;
-}
-
-/* CLOSE */
-function closeGame(){
-  document.getElementById("player").style.display="none";
-  document.getElementById("gameFrame").src="";
-}
 
 /* SEARCH */
 function search(val){
-  val=val.toLowerCase();
+  val = val.toLowerCase();
   let found=false;
 
   document.querySelectorAll(".card").forEach(card=>{
@@ -236,13 +207,13 @@ function search(val){
     }
   });
 
-  document.getElementById("no").style.display=found?"none":"block";
+  document.getElementById("no").style.display = found?"none":"block";
 }
 
 /* FAVORITE */
 function fav(e,el){
   e.stopPropagation();
-  el.innerText = el.innerText==="🤍" ? "❤️" : "🤍";
+  el.innerText = el.innerText==="🤍" ? "❤️":"🤍";
 }
 
 /* MODE */
