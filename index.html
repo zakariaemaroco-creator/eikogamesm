@@ -3,226 +3,259 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eiko Games 👑 | عالم الألعاب</title>
+<title>Eiko Games 👑 TOP 1</title>
 
 <style>
-  :root {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
-    --text-color: #f8fafc;
-    --accent-color: #22c55e;
-    --header-bg: #16a34a;
-  }
+:root {
+  --bg:#0f172a;
+  --card:#1e293b;
+  --text:#fff;
+  --green:#22c55e;
+}
 
-  .light-mode {
-    --bg-color: #f8fafc;
-    --card-bg: #ffffff;
-    --text-color: #0f172a;
-    --header-bg: #22c55e;
-  }
+.light {
+  --bg:#f1f5f9;
+  --card:#fff;
+  --text:#000;
+}
 
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--bg-color);
-    color: var(--text-color);
-    transition: all 0.3s ease;
-  }
+body {
+  margin:0;
+  font-family:sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
 
-  /* Header */
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 5%;
-    background: var(--header-bg);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
+/* HEADER */
+header {
+  display:flex;
+  justify-content:space-between;
+  padding:15px;
+  background:var(--green);
+}
 
-  header h2 { margin: 0; font-size: 1.5rem; }
+/* SEARCH */
+.search {
+  text-align:center;
+  padding:20px;
+}
 
-  #toggle {
-    background: white;
-    border: none;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.2rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  }
+.search input {
+  width:80%;
+  padding:12px;
+  border-radius:25px;
+  border:none;
+}
 
-  /* Search Section */
-  .search-container {
-    text-align: center;
-    padding: 2rem 1rem;
-    background: linear-gradient(180deg, var(--header-bg) 0%, transparent 100%);
-  }
+/* GRID */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+  padding:20px;
+}
 
-  .search-container input {
-    width: 90%;
-    max-width: 500px;
-    padding: 12px 20px;
-    border-radius: 25px;
-    border: 2px solid transparent;
-    outline: none;
-    font-size: 1rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transition: 0.3s;
-  }
+/* CARD */
+.card {
+  position:relative;
+  border-radius:15px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:0.3s;
+}
 
-  .search-container input:focus {
-    border-color: var(--accent-color);
-    width: 95%;
-  }
+.card:hover {
+  transform:scale(1.05);
+}
 
-  /* Games Grid */
-  .games-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+/* IMAGE */
+.thumb {
+  width:100%;
+  height:150px;
+  object-fit:cover;
+}
 
-  .game-card {
-    background: var(--card-bg);
-    border-radius: 20px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(255,255,255,0.1);
-  }
+/* OVERLAY */
+.overlay {
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  transition:0.3s;
+}
 
-  .game-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-  }
+.card:hover .overlay {
+  opacity:1;
+}
 
-  .game-card h3 {
-    padding: 15px;
-    margin: 0;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+.play {
+  background:var(--green);
+  border:none;
+  padding:10px 20px;
+  border-radius:10px;
+}
 
-  /* Responsive Iframe */
-  .iframe-wrapper {
-    position: relative;
-    width: 100%;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
-  }
+/* TITLE */
+.title {
+  padding:10px;
+  text-align:center;
+}
 
-  iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
+/* BADGE */
+.badge {
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:red;
+  color:white;
+  padding:5px 10px;
+  border-radius:10px;
+  font-size:12px;
+}
 
-  footer {
-    text-align: center;
-    padding: 3rem 1rem;
-    opacity: 0.8;
-  }
+/* FAVORITE */
+.fav {
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size:20px;
+  cursor:pointer;
+}
 
-  /* No Results Message */
-  #no-results {
-    display: none;
-    text-align: center;
-    padding: 20px;
-    font-style: italic;
-  }
+/* PLAYER */
+#player {
+  position:fixed;
+  inset:0;
+  background:black;
+  display:none;
+}
 
+#player iframe {
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+#close {
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:red;
+  color:white;
+  border:none;
+  padding:10px;
+}
+
+/* NO */
+#no {
+  text-align:center;
+  display:none;
+}
 </style>
 </head>
+
 <body>
 
 <header>
-  <h2>👑 Eiko Games</h2>
-  <button id="toggle" title="تغيير الوضع">🌙</button>
+<h2>👑 Eiko Games</h2>
+<button onclick="toggleMode()" id="mode">🌙</button>
 </header>
 
-<div class="search-container">
-  <input type="text" id="searchInput" placeholder="ابحث عن لعبتك المفضلة..." onkeyup="searchGame()">
+<div class="search">
+<input type="text" placeholder="ابحث..." onkeyup="search(this.value)">
 </div>
 
-<div class="games-grid" id="gamesGrid">
-  <div class="game-card">
-    <h3>🚇 Subway Runner</h3>
-    <div class="iframe-wrapper">
-      <iframe src="https://games.crazygames.com/en_US/subway-surfers/index.html" loading="lazy"></iframe>
-    </div>
-  </div>
+<div class="grid">
 
-  <div class="game-card">
-    <h3>⚽ Football Match</h3>
-    <div class="iframe-wrapper">
-      <iframe src="https://games.crazygames.com/en_US/football-heads-2023/index.html" loading="lazy"></iframe>
-    </div>
-  </div>
+<!-- GAME -->
+<div class="card" data-name="subway">
+<span class="badge">🔥</span>
+<span class="fav" onclick="fav(event,this)">🤍</span>
 
-  <div class="game-card">
-    <h3>⚽ Soccer Skills</h3>
-    <div class="iframe-wrapper">
-      <iframe src="https://games.crazygames.com/en_US/soccer-skills-euro-cup/index.html" loading="lazy"></iframe>
-    </div>
-  </div>
+<img src="https://i.imgur.com/7yUvePI.jpg" class="thumb">
 
-  <div class="game-card">
-    <h3>🚗 Speed Racer</h3>
-    <div class="iframe-wrapper">
-      <iframe src="https://html5games.com/Game/Speed-Racer/" loading="lazy"></iframe>
-    </div>
-  </div>
-
-  <div class="game-card">
-    <h3>🧠 Puzzle 2048</h3>
-    <div class="iframe-wrapper">
-      <iframe src="https://html5games.com/Game/2048/" loading="lazy"></iframe>
-    </div>
-  </div>
+<div class="overlay">
+<button class="play" onclick="playGame(event,'https://html5.gamedistribution.com/3938449c286e41429976722238495a43/')">▶️ Play</button>
 </div>
 
-<div id="no-results">لم يتم العثور على ألعاب بهذا الاسم 😅</div>
+<div class="title">Subway</div>
+</div>
 
-<footer>
-  <p>كل الحقوق محفوظة لـ <strong>Zakariae - Eiko Games</strong> © 2026</p>
-</footer>
+<!-- GAME -->
+<div class="card" data-name="2048">
+<span class="fav" onclick="fav(event,this)">🤍</span>
+
+<img src="https://i.imgur.com/T8pQK6G.png" class="thumb">
+
+<div class="overlay">
+<button class="play" onclick="playGame(event,'https://play2048.co/')">▶️ Play</button>
+</div>
+
+<div class="title">2048</div>
+</div>
+
+</div>
+
+<div id="no">😅 لا توجد نتائج</div>
+
+<!-- PLAYER -->
+<div id="player">
+<button id="close" onclick="closeGame()">❌</button>
+<iframe id="gameFrame"></iframe>
+</div>
 
 <script>
-  // تحسين البحث
-  function searchGame() {
-    const input = document.getElementById('searchInput').value.toLowerCase();
-    const cards = document.querySelectorAll('.game-card');
-    const noResults = document.getElementById('no-results');
-    let hasResults = false;
 
-    cards.forEach(card => {
-      const title = card.querySelector('h3').innerText.toLowerCase();
-      if (title.includes(input)) {
-        card.style.display = "block";
-        hasResults = true;
-      } else {
-        card.style.display = "none";
-      }
-    });
+/* PLAY */
+function playGame(e,src){
+  e.stopPropagation();
+  document.getElementById("player").style.display="block";
+  document.getElementById("gameFrame").src=src;
+}
 
-    noResults.style.display = hasResults ? "none" : "block";
-  }
+/* CLOSE */
+function closeGame(){
+  document.getElementById("player").style.display="none";
+  document.getElementById("gameFrame").src="";
+}
 
-  // تحسين وضع الليل/النهار
-  const toggleBtn = document.getElementById('toggle');
-  toggleBtn.onclick = () => {
-    document.body.classList.toggle('light-mode');
-    toggleBtn.innerText = document.body.classList.contains('light-mode') ? "☀️" : "🌙";
-  };
+/* SEARCH */
+function search(val){
+  val=val.toLowerCase();
+  let found=false;
+
+  document.querySelectorAll(".card").forEach(card=>{
+    if(card.dataset.name.includes(val)){
+      card.style.display="block";
+      found=true;
+    } else {
+      card.style.display="none";
+    }
+  });
+
+  document.getElementById("no").style.display=found?"none":"block";
+}
+
+/* FAVORITE */
+function fav(e,el){
+  e.stopPropagation();
+  el.innerText = el.innerText==="🤍" ? "❤️" : "🤍";
+}
+
+/* MODE */
+function toggleMode(){
+  document.body.classList.toggle("light");
+  localStorage.setItem("mode",document.body.classList.contains("light")?"light":"dark");
+}
+
+/* LOAD MODE */
+if(localStorage.getItem("mode")==="light"){
+  document.body.classList.add("light");
+}
+
 </script>
 
 </body>
