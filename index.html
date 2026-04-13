@@ -1,229 +1,174 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EIKO ULTRA GOD ONLINE 🔥</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EIKO SPEED MODE 🔥</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #020b2e, #000);
+            color: white;
+            text-align: center;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-<style>
-body{
-    margin:0;
-    font-family:Arial;
-    background:radial-gradient(circle,#000,#020b2e,#000);
-    color:white;
-    text-align:center;
-    overflow:hidden;
-}
+        h1 {
+            color: #00ffcc;
+            text-shadow: 0 0 20px #00ffcc;
+            margin: 10px 0;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
 
-h1{
-    color:#00ffcc;
-    text-shadow:0 0 30px #00ffcc;
-}
+        #ui {
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid #00ffcc;
+        }
 
-.menu{
-    margin:10px;
-}
+        canvas {
+            background: #000;
+            border: 4px solid #00ffcc;
+            box-shadow: 0 0 30px #00ffcc;
+            display: block;
+            max-width: 90vw;
+            max-height: 70vh;
+            cursor: none;
+        }
 
-button{
-    padding:10px 15px;
-    border:none;
-    border-radius:10px;
-    background:#00ffcc;
-    font-weight:bold;
-    cursor:pointer;
-    margin:5px;
-    transition:0.2s;
-}
-
-button:hover{
-    transform:scale(1.1);
-    box-shadow:0 0 20px #00ffcc;
-}
-
-canvas{
-    background:#111;
-    border:3px solid #00ffcc;
-    box-shadow:0 0 50px #00ffcc;
-    display:block;
-    margin:10px auto;
-    max-width:95vw;
-}
-
-#ui{
-    font-size:18px;
-}
-
-.screen{display:none;}
-.active{display:block;}
-</style>
+        .msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border: 2px solid #ff0055;
+            display: none;
+        }
+    </style>
 </head>
-
 <body>
 
-<h1>👑 ULTRA GOD ONLINE MODE 👑</h1>
-
-<div class="menu">
-<button onclick="show('menu')">🏠 Menu</button>
-<button onclick="show('game')">🎮 Play</button>
-<button onclick="restart()">🔄 Restart</button>
-</div>
-
-<div id="menu" class="screen active">
-<h2>🔥 EIKO ARCADE ONLINE 🔥</h2>
-<p>Space ولا click باش تنقز 💎</p>
-</div>
-
-<div id="game" class="screen">
-
-<div id="ui">Score: 0 | Best: 0 | Speed: 2</div>
-
-<canvas id="c" width="500" height="400"></canvas>
-
-</div>
+    <h1>⚡ ULTRA SPEED RUN ⚡</h1>
+    <div id="ui">Score: 0 | Best: 0</div>
+    <canvas id="c" width="400" height="600"></canvas>
 
 <script>
-const c = document.getElementById("c");
-const ctx = c.getContext("2d");
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const ui = document.getElementById('ui');
 
-let player, obs;
-let score = 0;
-let best = localStorage.getItem("best") || 0;
-let speed = 2;
-let running = false;
-let spawnTimer = 0;
-let lastTime = 0;
+    let score = 0;
+    let high备core = localStorage.getItem('best') || 0;
+    let speed = 5;
+    let gameActive = true;
 
-// ================= MENU =================
-function show(s){
-    document.querySelectorAll(".screen").forEach(e=>e.classList.remove("active"));
-    document.getElementById(s).classList.add("active");
-}
-
-// ================= GAME START =================
-function startGame(){
-    player = {
-        x:60,
-        y:300,
-        w:30,
-        h:30,
-        vy:0,
-        gravity:0.6,
-        jump:-10
+    // Player Object
+    const player = {
+        x: 200,
+        y: 530,
+        w: 30,
+        h: 30,
+        color: '#00ffcc'
     };
 
-    obs = [];
-    score = 0;
-    speed = 2;
-    spawnTimer = 0;
-    running = true;
-}
+    // Obstacles
+    const obstacles = [];
+    function createObstacle() {
+        const size = Math.random() * 50 + 20;
+        obstacles.push({
+            x: Math.random() * (canvas.width - size),
+            y: -size,
+            w: size,
+            h: 20,
+            speed: speed + (Math.random() * 2)
+        });
+    }
 
-function restart(){
-    startGame();
-}
+    // Controls
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        player.x = e.clientX - rect.left - player.w / 2;
+    });
 
-// auto start
-startGame();
+    // Touch for Mobile
+    canvas.addEventListener('touchmove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        player.x = e.touches[0].clientX - rect.left - player.w / 2;
+        e.preventDefault();
+    }, {passive: false});
 
-// ================= LOOP (SMOOTH + FIXED) =================
-function loop(time){
+    function update() {
+        if (!gameActive) return;
 
-    let delta = time - lastTime;
-    lastTime = time;
+        // Difficulty Increase
+        speed += 0.002;
+        score++;
+        ui.innerHTML = `Score: ${Math.floor(score/10)} | Best: ${Math.floor(high备core/10)}`;
 
-    ctx.clearRect(0,0,500,400);
+        if (Math.random() < 0.05 + (speed/200)) createObstacle();
 
-    if(running){
+        obstacles.forEach((obs, i) => {
+            obs.y += obs.speed;
 
-        // 🔥 difficulty scaling
-        speed = 2 + Math.floor(score / 4);
-
-        // gravity
-        player.vy += player.gravity;
-        player.y += player.vy;
-
-        if(player.y > 300){
-            player.y = 300;
-            player.vy = 0;
-        }
-
-        // draw player
-        ctx.fillStyle="#00ffcc";
-        ctx.fillRect(player.x,player.y,player.w,player.h);
-
-        // spawn system (smooth + controlled)
-        spawnTimer += delta;
-
-        if(spawnTimer > 900){
-            obs.push({x:500,y:320,w:20,h:60});
-            spawnTimer = 0;
-        }
-
-        // obstacles
-        ctx.fillStyle="red";
-
-        for(let i=0;i<obs.length;i++){
-            let o = obs[i];
-
-            o.x -= speed;
-
-            ctx.fillRect(o.x,o.y,o.w,o.h);
-
-            // collision FIXED (real hitbox)
-            if(
-                player.x < o.x + o.w &&
-                player.x + player.w > o.x &&
-                player.y < o.y + o.h &&
-                player.y + player.h > o.y
-            ){
+            // Collision Check
+            if (player.x < obs.x + obs.w &&
+                player.x + player.w > obs.x &&
+                player.y < obs.y + obs.h &&
+                player.y + player.h > obs.y) {
                 gameOver();
             }
 
-            // remove off-screen + score
-            if(o.x + o.w < 0){
-                obs.splice(i,1);
-                score++;
-                i--;
-            }
-        }
-
-        document.getElementById("ui").innerText =
-        `Score: ${score} | Best: ${best} | Speed: ${speed}`;
+            // Remove off-screen
+            if (obs.y > canvas.height) obstacles.splice(i, 1);
+        });
     }
 
-    requestAnimationFrame(loop);
-}
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// ================= GAME OVER =================
-function gameOver(){
-    running = false;
+        // Draw Player (Glowing Effect)
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = player.color;
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.w, player.h);
 
-    if(score > best){
-        best = score;
-        localStorage.setItem("best", best);
+        // Draw Obstacles
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = "#ff0055";
+        ctx.fillStyle = "#ff0055";
+        obstacles.forEach(obs => {
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+        });
+
+        requestAnimationFrame(() => {
+            update();
+            draw();
+        });
     }
 
-    setTimeout(()=>{
-        alert("💀 GAME OVER | Score: " + score);
-    },100);
-}
-
-// ================= CONTROLS =================
-document.addEventListener("keydown",e=>{
-    if(e.code === "Space" && player.y === 300){
-        player.vy = player.jump;
+    function gameOver() {
+        gameActive = false;
+        if (score > high备core) localStorage.setItem('best', score);
+        alert("Game Over! Score: " + Math.floor(score/10));
+        location.reload(); 
     }
-});
 
-document.addEventListener("click",()=>{
-    if(player.y === 300){
-        player.vy = player.jump;
-    }
-});
-
-// start loop
-requestAnimationFrame(loop);
+    draw();
 </script>
-
 </body>
 </html>
