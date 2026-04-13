@@ -1,242 +1,190 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EIKO ULTIMATE OP 🔥</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background: #050505;
-            color: white;
-            text-align: center;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        #game-container {
-            position: relative;
-            border: 4px solid #00ffcc;
-            box-shadow: 0 0 50px rgba(0, 255, 204, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        canvas {
-            display: block;
-            background: linear-gradient(to bottom, #000428, #000000);
-            cursor: none;
-        }
-
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 3rem;
-            color: #00ffcc;
-            text-shadow: 0 0 20px #00ffcc;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            background: transparent;
-            color: #00ffcc;
-            border: 2px solid #00ffcc;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-            font-weight: bold;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background: #00ffcc;
-            color: #000;
-            box-shadow: 0 0 30px #00ffcc;
-        }
-
-        #stats {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            text-align: left;
-            pointer-events: none;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            color: #00ffcc;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EIKO ELITE PRO 🔥</title>
+<style>
+    :root { --neon: #00ffcc; --danger: #ff0055; }
+    body {
+        margin: 0; background: #020205; color: white;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        display: flex; justify-content: center; align-items: center;
+        height: 100vh; overflow: hidden;
+    }
+    #game-container {
+        position: relative; width: 400px; height: 600px;
+        border: 2px solid rgba(0, 255, 204, 0.3);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 1);
+    }
+    canvas { display: block; background: #000; cursor: none; }
+    .overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
+        display: flex; justify-content: center; align-items: center;
+        flex-direction: column; z-index: 20; transition: 0.5s;
+    }
+    #stats {
+        position: absolute; top: 20px; left: 0; width: 100%;
+        pointer-events: none; display: flex; justify-content: space-around;
+        font-weight: 900; font-size: 20px; color: var(--neon); letter-spacing: 2px;
+    }
+    button {
+        padding: 15px 45px; font-size: 18px; background: transparent;
+        color: var(--neon); border: 2px solid var(--neon);
+        cursor: pointer; font-weight: bold; letter-spacing: 2px;
+        transition: 0.3s; border-radius: 4px;
+    }
+    button:hover { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); }
+    .wasted { color: var(--danger); text-shadow: 0 0 20px var(--danger); font-size: 3rem; }
+</style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="stats">SCORE: 0<br>LEVEL: 1</div>
-    
-    <div id="menu" class="overlay">
-        <h1>EIKO OP</h1>
-        <button onclick="startGame()">Start Mission</button>
+    <div id="stats">
+        <span>SCORE: <span id="sVal">0</span></span>
+        <span>LVL: <span id="lVal">1</span></span>
     </div>
 
-    <div id="pauseMenu" class="overlay" style="display:none;">
-        <h1>PAUSED</h1>
-        <button onclick="togglePause()">Resume</button>
+    <div id="menu" class="overlay">
+        <h1 style="font-size: 2.5rem; margin-bottom: 30px;">EIKO <span style="color:var(--neon)">PRO</span></h1>
+        <button onclick="startGame()">ENGAGE</button>
+    </div>
+
+    <div id="gameOverScreen" class="overlay" style="display:none;">
+        <h1 class="wasted">ELIMINATED</h1>
+        <p id="finalScore" style="margin-bottom: 20px;"></p>
+        <button onclick="location.reload()">TRY AGAIN</button>
     </div>
 
     <canvas id="c" width="400" height="600"></canvas>
 </div>
 
+<audio id="bgMusic" loop src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73467.mp3"></audio>
+<audio id="hitSound" src="https://cdn.pixabay.com/audio/2022/03/10/audio_2c4c36c51f.mp3"></audio>
+
 <script>
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
-const stats = document.getElementById("stats");
+const canvas = document.getElementById("c"), ctx = canvas.getContext("2d");
+const sVal = document.getElementById("sVal"), lVal = document.getElementById("lVal");
+const music = document.getElementById("bgMusic"), hitSound = document.getElementById("hitSound");
 
-let gameActive = false;
-let paused = false;
-let score = 0;
-let speed = 4;
-let level = 1;
-let obstacles = [];
+let gameActive = false, score = 0, speed = 4, level = 1;
+let obstacles = [], particles = [], stars = [];
 
-const player = {
-    x: 185,
-    y: 530,
-    w: 30,
-    h: 30,
-    color: "#00ffcc",
-    targetX: 185 // For smooth lerping
-};
+// Create Stars for background
+for(let i=0; i<50; i++) stars.push({x: Math.random()*400, y: Math.random()*600, s: Math.random()*2});
 
-// Controls
+const player = { x: 185, y: 530, w: 30, h: 30, targetX: 185 };
+
 canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
-    player.targetX = e.clientX - rect.left - player.w / 2;
-});
-
-// Touch for Mobile
-canvas.addEventListener("touchmove", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    player.targetX = e.touches[0].clientX - rect.left - player.w / 2;
-    e.preventDefault();
-}, {passive: false});
-
-window.addEventListener("keydown", (e) => {
-    if (e.key.toLowerCase() === "p") togglePause();
+    player.targetX = e.clientX - rect.left - player.w/2;
 });
 
 function startGame() {
     document.getElementById("menu").style.display = "none";
     gameActive = true;
+    music.volume = 0.3;
+    music.play();
     animate();
 }
 
-function togglePause() {
-    if (!gameActive) return;
-    paused = !paused;
-    document.getElementById("pauseMenu").style.display = paused ? "flex" : "none";
-}
-
-function createObstacle() {
-    const width = Math.random() * 60 + 30;
-    obstacles.push({
-        x: Math.random() * (canvas.width - width),
-        y: -30,
-        w: width,
-        h: 15,
-        speed: speed + (Math.random() * 1.5)
-    });
+function createParticle(x, y) {
+    for(let i=0; i<15; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10,
+            life: 1.0, color: i % 2 == 0 ? "#00ffcc" : "#fff"
+        });
+    }
 }
 
 function update() {
-    if (!gameActive || paused) return;
+    if (!gameActive) return;
 
-    // Smooth movement (Lerp)
-    player.x += (player.targetX - player.x) * 0.2;
-    
-    // Boundary check
-    if (player.x < 0) player.x = 0;
-    if (player.x > canvas.width - player.w) player.x = canvas.width - player.w;
+    // Background Stars
+    stars.forEach(st => {
+        st.y += speed * 0.5;
+        if(st.y > 600) st.y = 0;
+    });
 
+    player.x += (player.targetX - player.x) * 0.15;
     score++;
-    speed += 0.001;
+    if(score % 1000 === 0) { level++; speed += 0.8; }
 
-    // Level up system
-    if (score % 800 === 0) {
-        level++;
-        speed += 0.5;
-        // Flash effect for level up
-        canvas.style.borderColor = "#fff";
-        setTimeout(() => canvas.style.borderColor = "#00ffcc", 200);
+    if (Math.random() < 0.05 + (level*0.01)) {
+        let w = Math.random()*70 + 30;
+        obstacles.push({ x: Math.random()*(400-w), y: -40, w: w, h: 12, speed: speed + Math.random() });
     }
 
-    if (Math.random() < 0.04 + (level * 0.005)) createObstacle();
-
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let o = obstacles[i];
+    obstacles.forEach((o, i) => {
         o.y += o.speed;
-
-        // Collision detection
-        if (player.x < o.x + o.w &&
-            player.x + player.w > o.x &&
-            player.y < o.y + o.h &&
-            player.y + player.h > o.y) {
-            gameOver();
+        if (player.x < o.x + o.w && player.x + player.w > o.x && 
+            player.y < o.y + o.h && player.y + player.h > o.y) {
+            explode();
         }
+        if (o.y > 600) obstacles.splice(i, 1);
+    });
 
-        if (o.y > canvas.height) obstacles.splice(i, 1);
-    }
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        if(p.life <= 0) particles.splice(i, 1);
+    });
 
-    stats.innerHTML = `SCORE: ${Math.floor(score/10)}<br>LEVEL: ${level}`;
+    sVal.innerText = Math.floor(score/10);
+    lVal.innerText = level;
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, 400, 600);
 
-    // Draw Player
-    ctx.save();
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = player.color;
-    ctx.fillStyle = player.color;
-    // Drawing a slightly rounded player for "Classy" look
-    ctx.beginPath();
-    ctx.roundRect(player.x, player.y, player.w, player.h, 5);
-    ctx.fill();
-    ctx.restore();
+    // Stars
+    ctx.fillStyle = "#fff";
+    stars.forEach(st => ctx.fillRect(st.x, st.y, st.s, st.s));
 
-    // Draw Obstacles
+    // Player
+    if(gameActive) {
+        ctx.shadowBlur = 15; ctx.shadowColor = "#00ffcc";
+        ctx.fillStyle = "#00ffcc";
+        ctx.beginPath();
+        ctx.roundRect(player.x, player.y, player.w, player.h, 4);
+        ctx.fill();
+    }
+
+    // Obstacles
+    ctx.shadowBlur = 10; ctx.shadowColor = "#ff0055";
     ctx.fillStyle = "#ff0055";
     obstacles.forEach(o => {
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = "#ff0055";
         ctx.beginPath();
-        ctx.roundRect(o.x, o.y, o.w, o.h, 3);
+        ctx.roundRect(o.x, o.y, o.w, o.h, 2);
         ctx.fill();
     });
+
+    // Particles
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 4, 4);
+    });
+    ctx.globalAlpha = 1;
 }
 
 function animate() {
     update();
     draw();
-    if (gameActive) requestAnimationFrame(animate);
+    if (gameActive || particles.length > 0) requestAnimationFrame(animate);
 }
 
-function gameOver() {
+function explode() {
     gameActive = false;
-    alert("💀 Mission Failed | Score: " + Math.floor(score/10) + " | Level: " + level);
-    location.reload();
+    hitSound.play();
+    createParticle(player.x + 15, player.y + 15);
+    setTimeout(() => {
+        document.getElementById("finalScore").innerText = "FINAL SCORE: " + Math.floor(score/10);
+        document.getElementById("gameOverScreen").style.display = "flex";
+    }, 1000);
 }
 </script>
 </body>
