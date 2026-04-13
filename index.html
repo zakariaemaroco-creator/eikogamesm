@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EIKO ULTRA GOD ONLINE 🔥</title>
 
 <style>
@@ -11,6 +12,7 @@ body{
     background:radial-gradient(circle,#000,#020b2e,#000);
     color:white;
     text-align:center;
+    overflow:hidden;
 }
 
 h1{
@@ -44,19 +46,15 @@ canvas{
     box-shadow:0 0 50px #00ffcc;
     display:block;
     margin:10px auto;
+    max-width:95vw;
 }
 
 #ui{
     font-size:18px;
 }
 
-.screen{
-    display:none;
-}
-
-.active{
-    display:block;
-}
+.screen{display:none;}
+.active{display:block;}
 </style>
 </head>
 
@@ -67,23 +65,19 @@ canvas{
 <div class="menu">
 <button onclick="show('menu')">🏠 Menu</button>
 <button onclick="show('game')">🎮 Play</button>
+<button onclick="restart()">🔄 Restart</button>
 </div>
 
 <div id="menu" class="screen active">
-<h2>🔥 EIKO ARCADE ONLINE</h2>
-<p>اختار Play و دخل اللعبة 💎</p>
+<h2>🔥 EIKO ARCADE ONLINE 🔥</h2>
+<p>Space ولا click باش تنقز 💎</p>
 </div>
 
 <div id="game" class="screen">
 
-<div id="ui">
-Score: 0 | Best: 0 | Speed: 1
-</div>
+<div id="ui">Score: 0 | Best: 0 | Speed: 2</div>
 
 <canvas id="c" width="500" height="400"></canvas>
-
-<button onclick="startGame()">▶ Start</button>
-<button onclick="restart()">🔄 Restart</button>
 
 </div>
 
@@ -91,66 +85,109 @@ Score: 0 | Best: 0 | Speed: 1
 const c = document.getElementById("c");
 const ctx = c.getContext("2d");
 
-let player, obs, score=0, best=localStorage.getItem("best")||0;
-let speed=2;
-let running=false;
+let player, obs;
+let score = 0;
+let best = localStorage.getItem("best") || 0;
+let speed = 2;
+let running = false;
+let spawnTimer = 0;
+let lastTime = 0;
 
+// ================= MENU =================
 function show(s){
     document.querySelectorAll(".screen").forEach(e=>e.classList.remove("active"));
     document.getElementById(s).classList.add("active");
 }
 
-// ================= GAME =================
+// ================= GAME START =================
 function startGame(){
-    player={x:60,y:300,w:30,h:30,vy:0,gravity:0.6,jump:-10};
-    obs=[];
-    score=0;
-    speed=2;
-    running=true;
+    player = {
+        x:60,
+        y:300,
+        w:30,
+        h:30,
+        vy:0,
+        gravity:0.6,
+        jump:-10
+    };
+
+    obs = [];
+    score = 0;
+    speed = 2;
+    spawnTimer = 0;
+    running = true;
 }
 
 function restart(){
     startGame();
 }
 
-// ================= LOOP =================
-function loop(){
+// auto start
+startGame();
+
+// ================= LOOP (SMOOTH + FIXED) =================
+function loop(time){
+
+    let delta = time - lastTime;
+    lastTime = time;
+
     ctx.clearRect(0,0,500,400);
 
     if(running){
-        speed = 2 + Math.floor(score/5);
 
+        // 🔥 difficulty scaling
+        speed = 2 + Math.floor(score / 4);
+
+        // gravity
         player.vy += player.gravity;
         player.y += player.vy;
 
-        if(player.y>300){player.y=300;player.vy=0;}
+        if(player.y > 300){
+            player.y = 300;
+            player.vy = 0;
+        }
 
+        // draw player
         ctx.fillStyle="#00ffcc";
         ctx.fillRect(player.x,player.y,player.w,player.h);
 
-        if(Math.random()<0.02){
-            obs.push({x:500,y:320});
+        // spawn system (smooth + controlled)
+        spawnTimer += delta;
+
+        if(spawnTimer > 900){
+            obs.push({x:500,y:320,w:20,h:60});
+            spawnTimer = 0;
         }
 
+        // obstacles
         ctx.fillStyle="red";
 
-        obs.forEach(o=>{
-            o.x -= speed;
-            ctx.fillRect(o.x,o.y,20,60);
+        for(let i=0;i<obs.length;i++){
+            let o = obs[i];
 
+            o.x -= speed;
+
+            ctx.fillRect(o.x,o.y,o.w,o.h);
+
+            // collision FIXED (real hitbox)
             if(
-                player.x < o.x+20 &&
-                player.x+30 > o.x &&
-                player.y < 380 &&
-                player.y+30 > 320
+                player.x < o.x + o.w &&
+                player.x + player.w > o.x &&
+                player.y < o.y + o.h &&
+                player.y + player.h > o.y
             ){
                 gameOver();
             }
 
-            if(o.x===60) score++;
-        });
+            // remove off-screen + score
+            if(o.x + o.w < 0){
+                obs.splice(i,1);
+                score++;
+                i--;
+            }
+        }
 
-        document.getElementById("ui").innerText=
+        document.getElementById("ui").innerText =
         `Score: ${score} | Best: ${best} | Speed: ${speed}`;
     }
 
@@ -159,25 +196,33 @@ function loop(){
 
 // ================= GAME OVER =================
 function gameOver(){
-    running=false;
+    running = false;
 
-    if(score>best){
-        best=score;
-        localStorage.setItem("best",best);
+    if(score > best){
+        best = score;
+        localStorage.setItem("best", best);
     }
 
-    alert("💀 GAME OVER | Score: "+score);
+    setTimeout(()=>{
+        alert("💀 GAME OVER | Score: " + score);
+    },100);
 }
 
 // ================= CONTROLS =================
 document.addEventListener("keydown",e=>{
-    if(e.code==="Space" && player.y===300){
+    if(e.code === "Space" && player.y === 300){
         player.vy = player.jump;
     }
 });
 
-startGame();
-loop();
+document.addEventListener("click",()=>{
+    if(player.y === 300){
+        player.vy = player.jump;
+    }
+});
+
+// start loop
+requestAnimationFrame(loop);
 </script>
 
 </body>
