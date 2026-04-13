@@ -2,231 +2,182 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eiko Games 👑</title>
+<title>EIKO ULTRA GOD ONLINE 🔥</title>
 
 <style>
-:root {
-  --bg:#0f172a;
-  --card:#1e293b;
-  --text:#fff;
-  --green:#22c55e;
+body{
+    margin:0;
+    font-family:Arial;
+    background:radial-gradient(circle,#000,#020b2e,#000);
+    color:white;
+    text-align:center;
 }
 
-.light {
-  --bg:#f1f5f9;
-  --card:#fff;
-  --text:#000;
+h1{
+    color:#00ffcc;
+    text-shadow:0 0 30px #00ffcc;
 }
 
-body {
-  margin:0;
-  font-family:sans-serif;
-  background:var(--bg);
-  color:var(--text);
+.menu{
+    margin:10px;
 }
 
-/* HEADER */
-header {
-  display:flex;
-  justify-content:space-between;
-  padding:15px;
-  background:var(--green);
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:10px;
+    background:#00ffcc;
+    font-weight:bold;
+    cursor:pointer;
+    margin:5px;
+    transition:0.2s;
 }
 
-/* SEARCH */
-.search {
-  text-align:center;
-  padding:20px;
+button:hover{
+    transform:scale(1.1);
+    box-shadow:0 0 20px #00ffcc;
 }
 
-.search input {
-  width:80%;
-  padding:12px;
-  border-radius:25px;
-  border:none;
+canvas{
+    background:#111;
+    border:3px solid #00ffcc;
+    box-shadow:0 0 50px #00ffcc;
+    display:block;
+    margin:10px auto;
 }
 
-/* GRID */
-.grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:20px;
-  padding:20px;
+#ui{
+    font-size:18px;
 }
 
-/* CARD */
-.card {
-  position:relative;
-  border-radius:15px;
-  overflow:hidden;
-  transition:0.3s;
+.screen{
+    display:none;
 }
 
-.card:hover {
-  transform:scale(1.05);
-}
-
-/* IMAGE */
-.thumb {
-  width:100%;
-  height:150px;
-  object-fit:cover;
-}
-
-/* OVERLAY */
-.overlay {
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.6);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  opacity:0;
-  transition:0.3s;
-}
-
-.card:hover .overlay {
-  opacity:1;
-}
-
-/* PLAY */
-.play {
-  background:var(--green);
-  color:white;
-  padding:10px 20px;
-  border-radius:10px;
-  text-decoration:none;
-}
-
-/* TITLE */
-.title {
-  padding:10px;
-  text-align:center;
-}
-
-/* FAVORITE */
-.fav {
-  position:absolute;
-  top:10px;
-  right:10px;
-  font-size:20px;
-  cursor:pointer;
-}
-
-/* NO */
-#no {
-  text-align:center;
-  display:none;
+.active{
+    display:block;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-<h2>👑 Eiko Games</h2>
-<button onclick="toggleMode()" id="mode">🌙</button>
-</header>
+<h1>👑 ULTRA GOD ONLINE MODE 👑</h1>
 
-<div class="search">
-<input type="text" placeholder="ابحث عن لعبة..." onkeyup="search(this.value)">
+<div class="menu">
+<button onclick="show('menu')">🏠 Menu</button>
+<button onclick="show('game')">🎮 Play</button>
 </div>
 
-<div class="grid">
-
-<!-- GAME -->
-<div class="card" data-name="subway">
-<span class="fav" onclick="fav(event,this)">🤍</span>
-
-<img src="https://i.imgur.com/7yUvePI.jpg" class="thumb">
-
-<div class="overlay">
-<a href="https://ubg100.github.io/games/subway-surfers/" target="_blank" class="play">▶️ Play</a>
+<div id="menu" class="screen active">
+<h2>🔥 EIKO ARCADE ONLINE</h2>
+<p>اختار Play و دخل اللعبة 💎</p>
 </div>
 
-<div class="title">Subway Surfers</div>
+<div id="game" class="screen">
+
+<div id="ui">
+Score: 0 | Best: 0 | Speed: 1
 </div>
 
-<!-- GAME -->
-<div class="card" data-name="drift">
-<span class="fav" onclick="fav(event,this)">🤍</span>
+<canvas id="c" width="500" height="400"></canvas>
 
-<img src="https://i.imgur.com/8Qf6F9G.jpg" class="thumb">
-
-<div class="overlay">
-<a href="https://ubg100.github.io/games/drift-boss/" target="_blank" class="play">▶️ Play</a>
-</div>
-
-<div class="title">Drift Boss</div>
-</div>
-
-<!-- GAME -->
-<div class="card" data-name="2048">
-<span class="fav" onclick="fav(event,this)">🤍</span>
-
-<img src="https://i.imgur.com/T8pQK6G.png" class="thumb">
-
-<div class="overlay">
-<a href="https://play2048.co/" target="_blank" class="play">▶️ Play</a>
-</div>
-
-<div class="title">2048</div>
-</div>
-
-<!-- GAME -->
-<div class="card" data-name="1v1">
-<span class="fav" onclick="fav(event,this)">🤍</span>
-
-<img src="https://i.imgur.com/3ZQ3Z6p.jpg" class="thumb">
-
-<div class="overlay">
-<a href="https://ubg100.github.io/games/1v1-lol/" target="_blank" class="play">▶️ Play</a>
-</div>
-
-<div class="title">1v1.LOL</div>
-</div>
+<button onclick="startGame()">▶ Start</button>
+<button onclick="restart()">🔄 Restart</button>
 
 </div>
-
-<div id="no">😅 لا توجد نتائج</div>
 
 <script>
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
 
-/* SEARCH */
-function search(val){
-  val = val.toLowerCase();
-  let found=false;
+let player, obs, score=0, best=localStorage.getItem("best")||0;
+let speed=2;
+let running=false;
 
-  document.querySelectorAll(".card").forEach(card=>{
-    if(card.dataset.name.includes(val)){
-      card.style.display="block";
-      found=true;
-    } else {
-      card.style.display="none";
+function show(s){
+    document.querySelectorAll(".screen").forEach(e=>e.classList.remove("active"));
+    document.getElementById(s).classList.add("active");
+}
+
+// ================= GAME =================
+function startGame(){
+    player={x:60,y:300,w:30,h:30,vy:0,gravity:0.6,jump:-10};
+    obs=[];
+    score=0;
+    speed=2;
+    running=true;
+}
+
+function restart(){
+    startGame();
+}
+
+// ================= LOOP =================
+function loop(){
+    ctx.clearRect(0,0,500,400);
+
+    if(running){
+        speed = 2 + Math.floor(score/5);
+
+        player.vy += player.gravity;
+        player.y += player.vy;
+
+        if(player.y>300){player.y=300;player.vy=0;}
+
+        ctx.fillStyle="#00ffcc";
+        ctx.fillRect(player.x,player.y,player.w,player.h);
+
+        if(Math.random()<0.02){
+            obs.push({x:500,y:320});
+        }
+
+        ctx.fillStyle="red";
+
+        obs.forEach(o=>{
+            o.x -= speed;
+            ctx.fillRect(o.x,o.y,20,60);
+
+            if(
+                player.x < o.x+20 &&
+                player.x+30 > o.x &&
+                player.y < 380 &&
+                player.y+30 > 320
+            ){
+                gameOver();
+            }
+
+            if(o.x===60) score++;
+        });
+
+        document.getElementById("ui").innerText=
+        `Score: ${score} | Best: ${best} | Speed: ${speed}`;
     }
-  });
 
-  document.getElementById("no").style.display = found?"none":"block";
+    requestAnimationFrame(loop);
 }
 
-/* FAVORITE */
-function fav(e,el){
-  e.stopPropagation();
-  el.innerText = el.innerText==="🤍" ? "❤️":"🤍";
+// ================= GAME OVER =================
+function gameOver(){
+    running=false;
+
+    if(score>best){
+        best=score;
+        localStorage.setItem("best",best);
+    }
+
+    alert("💀 GAME OVER | Score: "+score);
 }
 
-/* MODE */
-function toggleMode(){
-  document.body.classList.toggle("light");
-  localStorage.setItem("mode",document.body.classList.contains("light")?"light":"dark");
-}
+// ================= CONTROLS =================
+document.addEventListener("keydown",e=>{
+    if(e.code==="Space" && player.y===300){
+        player.vy = player.jump;
+    }
+});
 
-/* LOAD MODE */
-if(localStorage.getItem("mode")==="light"){
-  document.body.classList.add("light");
-}
-
+startGame();
+loop();
 </script>
 
 </body>
