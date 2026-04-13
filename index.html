@@ -1,174 +1,166 @@
 <!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EIKO SPEED MODE 🔥</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle, #020b2e, #000);
-            color: white;
-            text-align: center;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EIKO ULTIMATE OP 🔥</title>
 
-        h1 {
-            color: #00ffcc;
-            text-shadow: 0 0 20px #00ffcc;
-            margin: 10px 0;
-            font-size: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-        }
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:radial-gradient(circle,#020b2e,#000);
+    color:white;
+    text-align:center;
+    overflow:hidden;
+}
+canvas{
+    background:#000;
+    border:3px solid #00ffcc;
+    box-shadow:0 0 25px #00ffcc;
+    margin-top:10px;
+}
+#menu, #pauseMenu{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:#000;
+    padding:30px;
+    border:2px solid #00ffcc;
+}
+button{
+    padding:10px 20px;
+    margin:10px;
+    background:#00ffcc;
+    border:none;
+    cursor:pointer;
+}
+</style>
 
-        #ui {
-            font-size: 22px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #fff;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 50px;
-            border: 1px solid #00ffcc;
-        }
-
-        canvas {
-            background: #000;
-            border: 4px solid #00ffcc;
-            box-shadow: 0 0 30px #00ffcc;
-            display: block;
-            max-width: 90vw;
-            max-height: 70vh;
-            cursor: none;
-        }
-
-        .msg {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            padding: 20px;
-            border: 2px solid #ff0055;
-            display: none;
-        }
-    </style>
 </head>
+
 <body>
 
-    <h1>⚡ ULTRA SPEED RUN ⚡</h1>
-    <div id="ui">Score: 0 | Best: 0</div>
-    <canvas id="c" width="400" height="600"></canvas>
+<div id="menu">
+<h1>🔥 EIKO OP 🔥</h1>
+<button onclick="startGame()">▶️ Start</button>
+</div>
+
+<div id="pauseMenu" style="display:none;">
+<h1>⏸️ Pause</h1>
+<button onclick="resumeGame()">▶️ Resume</button>
+</div>
+
+<canvas id="c" width="400" height="600"></canvas>
 
 <script>
-    const canvas = document.getElementById('c');
-    const ctx = canvas.getContext('2d');
-    const ui = document.getElementById('ui');
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
 
-    let score = 0;
-    let high备core = localStorage.getItem('best') || 0;
-    let speed = 5;
-    let gameActive = true;
+let gameActive=false;
+let paused=false;
+let score=0;
+let speed=5;
+let level=1;
 
-    // Player Object
-    const player = {
-        x: 200,
-        y: 530,
-        w: 30,
-        h: 30,
-        color: '#00ffcc'
-    };
+const player={x:180,y:520,w:30,h:30,color:"#00ffcc"};
+const obstacles=[];
 
-    // Obstacles
-    const obstacles = [];
-    function createObstacle() {
-        const size = Math.random() * 50 + 20;
-        obstacles.push({
-            x: Math.random() * (canvas.width - size),
-            y: -size,
-            w: size,
-            h: 20,
-            speed: speed + (Math.random() * 2)
-        });
+document.addEventListener("keydown",(e)=>{
+    if(e.key==="p"){
+        paused=!paused;
+        document.getElementById("pauseMenu").style.display=paused?"block":"none";
+    }
+});
+
+// Mouse
+canvas.addEventListener("mousemove",(e)=>{
+    const rect=canvas.getBoundingClientRect();
+    player.x=e.clientX-rect.left-player.w/2;
+});
+
+// Start
+function startGame(){
+    document.getElementById("menu").style.display="none";
+    gameActive=true;
+}
+
+// Resume
+function resumeGame(){
+    paused=false;
+    document.getElementById("pauseMenu").style.display="none";
+}
+
+// Obstacles
+function createObstacle(){
+    const size=Math.random()*50+20;
+    obstacles.push({
+        x:Math.random()*(canvas.width-size),
+        y:-size,
+        w:size,
+        h:20,
+        speed:speed
+    });
+}
+
+// Update
+function update(){
+    if(!gameActive || paused) return;
+
+    score++;
+    speed+=0.002;
+
+    if(score%500==0){
+        level++;
+        player.color="#"+Math.floor(Math.random()*16777215).toString(16);
     }
 
-    // Controls
-    canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        player.x = e.clientX - rect.left - player.w / 2;
+    if(Math.random()<0.05) createObstacle();
+
+    obstacles.forEach((o,i)=>{
+        o.y+=o.speed;
+
+        if(player.x<o.x+o.w &&
+           player.x+player.w>o.x &&
+           player.y<o.y+o.h &&
+           player.y+player.h>o.y){
+            alert("💀 Game Over | Level "+level);
+            location.reload();
+        }
+
+        if(o.y>canvas.height) obstacles.splice(i,1);
+    });
+}
+
+// Draw
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.shadowBlur=15;
+    ctx.shadowColor=player.color;
+    ctx.fillStyle=player.color;
+    ctx.fillRect(player.x,player.y,player.w,player.h);
+
+    ctx.fillStyle="#ff0055";
+    obstacles.forEach(o=>{
+        ctx.fillRect(o.x,o.y,o.w,o.h);
     });
 
-    // Touch for Mobile
-    canvas.addEventListener('touchmove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        player.x = e.touches[0].clientX - rect.left - player.w / 2;
-        e.preventDefault();
-    }, {passive: false});
+    ctx.fillStyle="#fff";
+    ctx.fillText("Score: "+score,10,20);
+    ctx.fillText("Level: "+level,10,40);
 
-    function update() {
-        if (!gameActive) return;
+    requestAnimationFrame(()=>{
+        update();
+        draw();
+    });
+}
 
-        // Difficulty Increase
-        speed += 0.002;
-        score++;
-        ui.innerHTML = `Score: ${Math.floor(score/10)} | Best: ${Math.floor(high备core/10)}`;
-
-        if (Math.random() < 0.05 + (speed/200)) createObstacle();
-
-        obstacles.forEach((obs, i) => {
-            obs.y += obs.speed;
-
-            // Collision Check
-            if (player.x < obs.x + obs.w &&
-                player.x + player.w > obs.x &&
-                player.y < obs.y + obs.h &&
-                player.y + player.h > obs.y) {
-                gameOver();
-            }
-
-            // Remove off-screen
-            if (obs.y > canvas.height) obstacles.splice(i, 1);
-        });
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw Player (Glowing Effect)
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = player.color;
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.w, player.h);
-
-        // Draw Obstacles
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = "#ff0055";
-        ctx.fillStyle = "#ff0055";
-        obstacles.forEach(obs => {
-            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-        });
-
-        requestAnimationFrame(() => {
-            update();
-            draw();
-        });
-    }
-
-    function gameOver() {
-        gameActive = false;
-        if (score > high备core) localStorage.setItem('best', score);
-        alert("Game Over! Score: " + Math.floor(score/10));
-        location.reload(); 
-    }
-
-    draw();
+// Loop
+draw();
 </script>
+
 </body>
 </html>
