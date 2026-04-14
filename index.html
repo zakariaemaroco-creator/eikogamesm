@@ -1,281 +1,136 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EIKO X-TREME GOD ⚡</title>
+<title>EIKO ULTRA GOD ⚡</title>
 
 <style>
-:root { --neon:#00ffcc; --danger:#ff0055; --gold:#ffcc00; }
-
-body{
-    margin:0;background:#05050a;color:white;
-    display:flex;justify-content:center;align-items:center;
-    height:100vh;overflow:hidden;
-    font-family:sans-serif;
-}
-
-#wrapper{
-    position:relative;width:100%;max-width:450px;height:100%;
-    border:2px solid rgba(0,255,204,0.2);
-}
-
-canvas{width:100%;height:100%;background:#000}
-
-#top-bar{
-    position:absolute;top:0;width:100%;
-    display:flex;justify-content:space-between;
-    padding:10px;color:var(--neon);
-    font-weight:bold;
-}
-
-.overlay{
-    position:absolute;inset:0;background:#000c;
-    display:flex;flex-direction:column;
-    justify-content:center;align-items:center;
-    z-index:10;
-}
-
-button{
-    padding:10px 30px;border:2px solid var(--neon);
-    background:none;color:var(--neon);cursor:pointer;
-}
+body{margin:0;background:#000;color:white;text-align:center;font-family:sans-serif}
+canvas{display:block;margin:auto;background:#000}
+button{padding:10px 20px;margin:5px}
+#ui{position:absolute;top:10px;width:100%;display:flex;justify-content:space-around;color:#0ff}
 </style>
 </head>
 
 <body>
 
-<div id="wrapper">
-
-<div id="top-bar">
-<div>SCORE: <span id="sc">0</span></div>
-<div style="color:red">BEST: <span id="bs">0</span></div>
+<div id="ui">
+<div>Score: <span id="sc">0</span></div>
+<div>Shield: <span id="shield">0</span></div>
 </div>
 
-<div id="menu" class="overlay">
-<h1>EIKO GOD ⚡</h1>
 <button onclick="init()">START</button>
-</div>
+<button onclick="useBomb()">💣</button>
 
-<div id="game-over" class="overlay" style="display:none">
-<h2 style="color:red">GAME OVER</h2>
-<p id="f-score"></p>
-<button onclick="location.reload()">RESTART</button>
-</div>
-
-<canvas id="canvas"></canvas>
-
-</div>
+<canvas id="c"></canvas>
 
 <script>
-const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
-let w,h;
+let c=document.getElementById("c"),ctx=c.getContext("2d");
+let w=innerWidth,h=innerHeight;
+c.width=w;c.height=h;
 
-let player,enemies=[],bullets=[],particles=[],stars=[];
-let score=0,best=localStorage.getItem("best")||0;
-let gameActive=false,frame=0,shake=0,slowMo=1;
-let boss=null;
+let player,enemies=[],bullets=[],particles=[];
+let score=0,game=true,shield=3,laser=false;
 
-document.getElementById("bs").innerText=best;
-
-function resize(){
-w=canvas.width=canvas.offsetWidth;
-h=canvas.height=canvas.offsetHeight;
-}
-resize();window.onresize=resize;
+let shootSound=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+let boomSound=new Audio("https://actions.google.com/sounds/v1/explosions/explosion.ogg");
 
 class Player{
-constructor(){
-this.x=w/2;this.y=h-80;
-this.targetX=this.x;
-}
+constructor(){this.x=w/2;this.y=h-80;}
 draw(){
-ctx.save();
-ctx.translate(this.x,this.y);
-ctx.shadowBlur=25;
-ctx.shadowColor="#00ffcc";
-
-ctx.fillStyle="#00ffcc";
-ctx.beginPath();
-ctx.moveTo(0,-20);ctx.lineTo(20,20);ctx.lineTo(-20,20);
-ctx.fill();
-
-ctx.fillStyle="#fff";
-ctx.fillRect(-5,0,10,10);
-ctx.restore();
-}
-update(){
-this.x+=(this.targetX-this.x)*0.2;
+ctx.shadowBlur=20;
+ctx.shadowColor="#0ff";
+ctx.fillStyle="#0ff";
+ctx.fillRect(this.x-10,this.y-10,20,20);
 }
 }
 
-class Enemy{
-constructor(){
-this.w=30+Math.random()*40;
-this.x=Math.random()*(w-this.w);
-this.y=-40;
-this.hp=Math.ceil(this.w/20);
-this.speed=2+Math.random()*3;
-}
-draw(){
-ctx.shadowBlur=15;
-ctx.shadowColor="#ff0055";
-ctx.fillStyle="#ff0055";
-ctx.fillRect(this.x,this.y,this.w,20);
-}
+function spawnEnemy(){
+enemies.push({x:Math.random()*w,y:-20,hp:2});
 }
 
-function spawnStars(){
-for(let i=0;i<100;i++){
-stars.push({x:Math.random()*w,y:Math.random()*h,s:Math.random()*2});
-}
+function shoot(){
+bullets.push({x:player.x,y:player.y});
+shootSound.play();
 }
 
-function createExplosion(x,y,c){
-shake=20;
-for(let i=0;i<40;i++){
+function explosion(x,y){
+boomSound.play();
+for(let i=0;i<20;i++){
 particles.push({
 x,y,
-vx:(Math.random()-0.5)*15,
-vy:(Math.random()-0.5)*15,
-life:1,
-size:Math.random()*4,
-c
+vx:(Math.random()-0.5)*10,
+vy:(Math.random()-0.5)*10,
+life:1
 });
 }
+}
+
+function useBomb(){
+enemies=[];
+explosion(player.x,player.y);
 }
 
 function update(){
-if(!gameActive)return;
+if(!game)return;
 
-frame++;
-player.update();
+if(Math.random()<0.03)spawnEnemy();
 
-// stars
-stars.forEach(s=>{
-s.y+=s.s*2*slowMo;
-if(s.y>h){s.y=0;s.x=Math.random()*w;}
-});
-
-// bullets
 bullets.forEach((b,i)=>{
-b.y-=12*slowMo;
+b.y-=10;
 if(b.y<0)bullets.splice(i,1);
 });
 
-// enemies spawn
-if(frame%40===0)enemies.push(new Enemy());
-
-// boss
-if(score>2000 && !boss){
-boss={x:w/2-60,y:50,w:120,h:40,hp:60};
-}
-
 enemies.forEach((e,ei)=>{
-e.y+=e.speed;
-e.x+=Math.sin(frame*0.05+ei)*2;
+e.y+=3;
 
-// collision
 bullets.forEach((b,bi)=>{
-if(b.x>e.x && b.x<e.x+e.w && b.y>e.y && b.y<e.y+20){
+if(Math.abs(b.x-e.x)<20 && Math.abs(b.y-e.y)<20){
 e.hp--;
 bullets.splice(bi,1);
 
 if(e.hp<=0){
-createExplosion(e.x,e.y,"#ff0055");
+explosion(e.x,e.y);
 enemies.splice(ei,1);
 score+=100;
-
-slowMo=0.5;
-setTimeout(()=>slowMo=1,100);
 }
 }
 });
 
-if(Math.abs(player.x-(e.x+e.w/2))<30 && Math.abs(player.y-e.y)<30){
-gameOver();
-}
-
-});
-
-// boss hit
-if(boss){
-bullets.forEach((b,bi)=>{
-if(b.x>boss.x && b.x<boss.x+boss.w && b.y>boss.y && b.y<boss.y+boss.h){
-boss.hp--;
-bullets.splice(bi,1);
-if(boss.hp<=0){
-createExplosion(boss.x,boss.y,"red");
-boss=null;
-score+=1000;
+if(Math.abs(player.x-e.x)<20 && Math.abs(player.y-e.y)<20){
+if(shield>0){
+shield--;
+explosion(player.x,player.y);
+enemies.splice(ei,1);
+}else{
+game=false;
+alert("GAME OVER");
 }
 }
 });
-}
-
-// particles
-particles.forEach((p,i)=>{
-p.x+=p.vx;
-p.y+=p.vy;
-p.life-=0.02;
-if(p.life<=0)particles.splice(i,1);
-});
-
 document.getElementById("sc").innerText=score;
+document.getElementById("shield").innerText=shield;
 }
 
 function draw(){
-ctx.fillStyle="#05050a";
+ctx.fillStyle="rgba(0,0,0,0.3)";
 ctx.fillRect(0,0,w,h);
 
-ctx.save();
+player.draw();
 
-if(shake>0){
-ctx.translate(Math.random()*shake-shake/2,Math.random()*shake-shake/2);
-shake*=0.9;
-}
+ctx.fillStyle="#0ff";
+bullets.forEach(b=>ctx.fillRect(b.x,b.y,4,10));
 
-// stars
-ctx.fillStyle="#fff";
-stars.forEach(s=>ctx.fillRect(s.x,s.y,s.s,s.s));
-
-// bullets + trail
-bullets.forEach(b=>{
-ctx.shadowBlur=25;
-ctx.shadowColor="#00ffcc";
-
-ctx.beginPath();
-ctx.moveTo(b.x,b.y+20);
-ctx.lineTo(b.x,b.y+40);
-ctx.strokeStyle="rgba(0,255,204,0.3)";
-ctx.lineWidth=4;
-ctx.stroke();
-
-ctx.fillStyle="#00ffcc";
-ctx.fillRect(b.x-2,b.y,4,15);
-});
-
-// enemies
-enemies.forEach(e=>e.draw());
-
-// boss
-if(boss){
 ctx.fillStyle="red";
-ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
-}
+enemies.forEach(e=>ctx.fillRect(e.x,e.y,20,20));
 
-// particles
 particles.forEach(p=>{
 ctx.globalAlpha=p.life;
-ctx.fillStyle=p.c;
-ctx.beginPath();
-ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-ctx.fill();
+ctx.fillRect(p.x,p.y,3,3);
+p.x+=p.vx;p.y+=p.vy;p.life-=0.02;
 });
 ctx.globalAlpha=1;
-
-player.draw();
-ctx.restore();
 }
 
 function loop(){
@@ -284,37 +139,15 @@ requestAnimationFrame(loop);
 }
 
 function init(){
-document.getElementById("menu").style.display="none";
 player=new Player();
-spawnStars();
-gameActive=true;
-
-// AUTO FIRE
-setInterval(()=>{
-if(gameActive)bullets.push({x:player.x,y:player.y-20});
-},120);
-
+setInterval(shoot,200);
 loop();
 }
 
-function gameOver(){
-gameActive=false;
-createExplosion(player.x,player.y,"#00ffcc");
-
-if(score>best)localStorage.setItem("best",score);
-
-document.getElementById("f-score").innerText="Score: "+score;
-setTimeout(()=>{
-document.getElementById("game-over").style.display="flex";
-},1000);
-}
-
-// controls
-canvas.addEventListener("mousemove",e=>{
-let rect=canvas.getBoundingClientRect();
-player.targetX=(e.clientX-rect.left)*(w/rect.width);
+window.addEventListener("mousemove",e=>{
+player.x=e.clientX;
 });
-
 </script>
+
 </body>
 </html>
