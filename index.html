@@ -3,318 +3,197 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>EIKO ELITE PRO 🔥</title>
+<title>EIKO PRO MAX 🚀</title>
 <style>
-    :root { 
-        --neon: #00ffcc; 
-        --danger: #ff0055; 
-        --bg-dark: #020205;
-    }
-    body {
-        margin: 0; 
-        background: var(--bg-dark); 
-        color: white;
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        display: flex; 
-        justify-content: center; 
-        align-items: center;
-        height: 100vh; 
-        overflow: hidden;
-        user-select: none; /* منع تحديد النصوص */
-    }
-    #game-container {
-        position: relative; 
-        width: 100%; 
-        max-width: 400px; 
-        height: 100%; 
-        max-height: 600px;
-        border: 2px solid rgba(0, 255, 204, 0.3);
-        box-shadow: 0 0 40px rgba(0, 255, 204, 0.1);
-        background: #000;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    /* جعل الكانفاس يتجاوب مع حجم الحاوية */
-    canvas { 
-        display: block; 
-        width: 100%; 
-        height: 100%; 
-        cursor: crosshair;
-        touch-action: none; /* منع الانزلاق فالتيليفون */
-    }
-    .overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-        display: flex; justify-content: center; align-items: center;
-        flex-direction: column; z-index: 20; transition: 0.5s opacity;
-    }
-    #stats {
-        position: absolute; top: 15px; left: 0; width: 100%;
-        pointer-events: none; display: flex; justify-content: space-around;
-        font-weight: 900; font-size: 1.2rem; color: var(--neon); letter-spacing: 2px;
-        z-index: 10;
-        text-shadow: 0 0 10px var(--neon);
-    }
-    button {
-        padding: 15px 45px; font-size: 1.2rem; background: rgba(0, 255, 204, 0.1);
-        color: var(--neon); border: 2px solid var(--neon);
-        cursor: pointer; font-weight: bold; letter-spacing: 3px;
-        transition: all 0.3s ease; border-radius: 8px;
-        text-transform: uppercase;
-    }
-    button:hover, button:active { 
-        background: var(--neon); 
-        color: #000; 
-        box-shadow: 0 0 30px var(--neon); 
-        transform: scale(1.05);
-    }
-    .wasted { 
-        color: var(--danger); 
-        text-shadow: 0 0 25px var(--danger); 
-        font-size: 3rem; 
-        margin-bottom: 10px;
-        letter-spacing: 5px;
-    }
-    .title-pro {
-        font-size: 3rem; margin-bottom: 40px; letter-spacing: 4px;
-    }
+:root{--neon:#00ffc3;--danger:#ff0055; --bg:#020205;}
+body{margin:0;background:var(--bg);font-family:'Segoe UI', sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;color:#fff; user-select: none; touch-action: none;}
+#game{width:100%;max-width:400px;height:100%;max-height:600px;position:relative;border-radius:15px;overflow:hidden;box-shadow:0 0 40px #00ffc344;background:#000}
+canvas{display:block;width:100%;height:100%; cursor: crosshair;}
+#ui{position:absolute;top:15px;width:100%;display:flex;justify-content:space-around;font-weight:bold;font-size:1.2rem;color:var(--neon); text-shadow: 0 0 10px var(--neon); z-index: 10; pointer-events: none;}
+.overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);display:flex;justify-content:center;align-items:center;flex-direction:column;z-index: 20;}
+button{padding:15px 45px;font-size:1.2rem;border-radius:10px;border:2px solid var(--neon);background:rgba(0, 255, 195, 0.1);color:var(--neon);cursor:pointer;font-weight:bold;letter-spacing:2px;transition:0.3s;}
+button:hover{background:var(--neon);color:#000;box-shadow:0 0 20px var(--neon);transform:scale(1.05);}
+h1{letter-spacing:3px; margin-bottom: 30px;}
+.wasted {color: var(--danger); text-shadow: 0 0 20px var(--danger); font-size: 2.5rem;}
 </style>
 </head>
 <body>
-
-<div id="game-container">
-    <div id="stats">
-        <span>SCORE: <span id="sVal">0</span></span>
-        <span>LVL: <span id="lVal">1</span></span>
+<div id="game">
+    <div id="ui">
+        <span>SCORE: <span id="s">0</span></span>
+        <span>BEST: <span id="b">0</span></span>
     </div>
-
+    
     <div id="menu" class="overlay">
-        <h1 class="title-pro">EIKO <span style="color:var(--neon)">PRO</span></h1>
-        <button onclick="startGame()">ENGAGE</button>
+        <h1>EIKO <span style="color:var(--neon)">PRO MAX</span></h1>
+        <button onclick="start()">PLAY</button>
     </div>
 
     <div id="gameOverScreen" class="overlay" style="display:none;">
-        <h1 class="wasted">ELIMINATED</h1>
-        <p id="finalScore" style="margin-bottom: 30px; font-size: 1.5rem; color: #fff;"></p>
+        <h1 class="wasted">GAME OVER</h1>
+        <p style="font-size: 1.5rem; margin-bottom: 20px;">SCORE: <span id="finalScore">0</span></p>
         <button onclick="location.reload()">TRY AGAIN</button>
     </div>
 
     <canvas id="c" width="400" height="600"></canvas>
 </div>
 
-<audio id="bgMusic" loop src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73467.mp3"></audio>
-<audio id="hitSound" src="https://cdn.pixabay.com/audio/2022/03/10/audio_2c4c36c51f.mp3"></audio>
+<audio id="shoot" src="https://cdn.pixabay.com/audio/2022/03/15/audio_4c5b3f3c92.mp3"></audio>
+<audio id="boom" src="https://cdn.pixabay.com/audio/2022/03/10/audio_2c4c36c51f.mp3"></audio>
 
 <script>
-const canvas = document.getElementById("c"), ctx = canvas.getContext("2d");
-const sVal = document.getElementById("sVal"), lVal = document.getElementById("lVal");
-const music = document.getElementById("bgMusic"), hitSound = document.getElementById("hitSound");
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+let player = {x: 180, y: 520, w: 30, h: 30, skin: 0};
+let bullets = [], enemies = [], particles = [];
+let score = 0, best = localStorage.getItem('best') || 0;
+document.getElementById('b').innerText = best;
+let game = false;
 
-let gameActive = false, score = 0, speed = 4, level = 1, screenShake = 0;
-let obstacles = [], particles = [], stars = [];
+const shootSound = document.getElementById('shoot');
+const boom = document.getElementById('boom');
 
-// إنشاء النجوم للخلفية
-for(let i=0; i<70; i++) {
-    stars.push({
-        x: Math.random() * canvas.width, 
-        y: Math.random() * canvas.height, 
-        s: Math.random() * 2.5,
-        alpha: Math.random()
-    });
-}
-
-const player = { x: 185, y: 530, w: 30, h: 30, targetX: 185 };
-
-// دالة حساب موقع الماوس أو الإصبع بدقة
-function updatePlayerPosition(clientX) {
-    if (!gameActive) return;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width; // حساب نسبة التكبير/التصغير
+// دالة لتحديد موقع اللاعب بدقة
+function movePlayer(clientX) {
+    if(!game) return;
+    const rect = c.getBoundingClientRect();
+    const scaleX = c.width / rect.width;
     let newX = (clientX - rect.left) * scaleX - player.w / 2;
-    
-    // منع اللاعب من الخروج من الشاشة
-    player.targetX = Math.max(0, Math.min(canvas.width - player.w, newX));
+    player.x = Math.max(0, Math.min(c.width - player.w, newX));
 }
 
-// دعم الماوس (للبيسي)
-canvas.addEventListener("mousemove", (e) => updatePlayerPosition(e.clientX));
+// التحكم بالماوس (PC)
+c.addEventListener('mousemove', e => movePlayer(e.clientX));
 
-// دعم اللمس (للتليفون)
-canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault(); // منع الشاشة من التحرك
-    updatePlayerPosition(e.touches[0].clientX);
-}, { passive: false });
+// التحكم باللمس (الهواتف)
+c.addEventListener('touchmove', e => {
+    e.preventDefault();
+    movePlayer(e.touches[0].clientX);
+});
 
-function startGame() {
-    document.getElementById("menu").style.opacity = "0";
-    setTimeout(() => document.getElementById("menu").style.display = "none", 500);
-    gameActive = true;
-    music.volume = 0.4;
-    music.play().catch(e => console.log("Audio play prevented by browser"));
-    animate();
+// إطلاق النار (PC + الهواتف)
+function fireBullet() {
+    if(!game) return;
+    bullets.push({x: player.x + 13, y: player.y});
+    shootSound.currentTime = 0;
+    shootSound.play().catch(()=>{});
+}
+c.addEventListener('click', fireBullet);
+c.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    movePlayer(e.touches[0].clientX); // تحديث المكان قبل الإطلاق
+    fireBullet();
+});
+
+function start() {
+    document.getElementById('menu').style.display = 'none';
+    game = true;
+    loop();
 }
 
-function createParticle(x, y) {
-    for(let i=0; i<30; i++) {
+function spawn() {
+    if(Math.random() < 0.04 + (score * 0.0001)) { // زيادة الصعوبة تدريجياً
+        let w = Math.random() * 40 + 20;
+        enemies.push({x: Math.random() * (400 - w), y: -20, w: w, h: 20});
+    }
+}
+
+function explode(x, y) {
+    for(let i = 0; i < 25; i++) {
         particles.push({
-            x: x, y: y,
-            vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15,
-            life: 1.0, 
-            color: Math.random() > 0.5 ? "#00ffcc" : "#ff0055",
-            size: Math.random() * 4 + 1
+            x: x + 10, y: y + 10, 
+            vx: (Math.random() - 0.5) * 8, 
+            vy: (Math.random() - 0.5) * 8, 
+            life: 1,
+            color: Math.random() > 0.5 ? '#ff0055' : '#ff8800'
         });
     }
+    boom.currentTime = 0;
+    boom.play().catch(()=>{});
 }
 
 function update() {
-    if (!gameActive) return;
+    score++;
+    spawn();
 
-    // تحريك النجوم (تأثير المنظر - Parallax)
-    stars.forEach(st => {
-        st.y += speed * 0.4 * (st.s);
-        if(st.y > canvas.height) {
-            st.y = 0;
-            st.x = Math.random() * canvas.width;
-        }
+    bullets.forEach(b => b.y -= 10); // تسريع الرصاص
+    enemies.forEach(e => e.y += 4 + (score/1000)); // تسريع الأعداء مع الوقت
+
+    // اصطدام الرصاص بالأعداء
+    bullets.forEach((b, bi) => {
+        enemies.forEach((e, ei) => {
+            if(b.x < e.x + e.w && b.x + 4 > e.x && b.y < e.y + e.h && b.y + 10 > e.y) {
+                explode(e.x, e.y);
+                enemies.splice(ei, 1);
+                bullets.splice(bi, 1);
+                score += 50;
+            }
+        });
     });
 
-    // حركة اللاعب سلسة (Lerp)
-    player.x += (player.targetX - player.x) * 0.2;
-    score++;
-    
-    // زيادة الصعوبة
-    if(score % 800 === 0) { level++; speed += 0.6; }
-
-    // توليد العقبات
-    if (Math.random() < 0.05 + (level*0.008)) {
-        let w = Math.random()*80 + 30;
-        obstacles.push({ 
-            x: Math.random()*(canvas.width - w), 
-            y: -40, 
-            w: w, h: 15, 
-            speed: speed + Math.random()*2 
-        });
+    // اصطدام اللاعب بالأعداء (الخسارة)
+    if(enemies.some(e => player.x < e.x + e.w && player.x + player.w > e.x && player.y < e.y + e.h && player.y + player.h > e.y)) {
+        game = false;
+        explode(player.x, player.y);
     }
 
-    // تحديث العقبات والتأكد من الاصطدام
-    obstacles.forEach((o, i) => {
-        o.y += o.speed;
-        
-        // خوارزمية الاصطدام AABB
-        if (player.x < o.x + o.w && player.x + player.w > o.x && 
-            player.y < o.y + o.h && player.y + player.h > o.y) {
-            explode();
-        }
-        
-        // مسح العقبات لي فاتت الشاشة
-        if (o.y > canvas.height) obstacles.splice(i, 1);
-    });
+    particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.03; });
+    particles = particles.filter(p => p.life > 0);
 
-    // تحديث الجزيئات (Particles)
-    particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; 
-        p.life -= 0.02;
-        if(p.life <= 0) particles.splice(i, 1);
-    });
+    bullets = bullets.filter(b => b.y > 0);
+    enemies = enemies.filter(e => e.y < 600);
 
-    // تحديث النقاط فالشاشة
-    sVal.innerText = Math.floor(score/10);
-    lVal.innerText = level;
+    document.getElementById('s').innerText = score;
 }
 
 function draw() {
-    ctx.fillStyle = "#020205";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#020205'; 
+    ctx.fillRect(0, 0, 400, 600);
 
-    // تأثير رجة الشاشة (Screen Shake)
-    if (screenShake > 0) {
-        ctx.save();
-        let dx = (Math.random() - 0.5) * screenShake;
-        let dy = (Math.random() - 0.5) * screenShake;
-        ctx.translate(dx, dy);
-        screenShake -= 1;
-    }
+    // رسم اللاعب مع Glow
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = player.skin == 0 ? '#00ffc3' : 'orange';
+    ctx.fillStyle = player.skin == 0 ? '#00ffc3' : 'orange';
+    if(game) ctx.fillRect(player.x, player.y, 30, 30);
 
-    // رسم النجوم
-    stars.forEach(st => {
-        ctx.globalAlpha = st.alpha;
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(st.x, st.y, st.s, st.s);
-    });
-    ctx.globalAlpha = 1;
+    // رسم الرصاص
+    ctx.shadowColor = '#fff';
+    ctx.fillStyle = '#fff';
+    bullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 12));
 
-    // رسم اللاعب
-    if(gameActive) {
-        ctx.shadowBlur = 20; 
-        ctx.shadowColor = "#00ffcc";
-        ctx.fillStyle = "#00ffcc";
-        ctx.beginPath();
-        // استخدام خاصية التدوير للحواف (تدعمها أغلب المتصفحات الحديثة)
-        if(ctx.roundRect) {
-            ctx.roundRect(player.x, player.y, player.w, player.h, 6);
-        } else {
-            ctx.fillRect(player.x, player.y, player.w, player.h);
-        }
-        ctx.fill();
-        
-        // نواة اللاعب (Core)
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(player.x + 10, player.y + 10, 10, 10);
-    }
+    // رسم الأعداء
+    ctx.shadowColor = '#ff0055';
+    ctx.fillStyle = '#ff0055';
+    enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
 
-    // رسم العقبات
-    ctx.shadowBlur = 15; 
-    ctx.shadowColor = "#ff0055";
-    ctx.fillStyle = "#ff0055";
-    obstacles.forEach(o => {
-        ctx.beginPath();
-        if(ctx.roundRect) {
-            ctx.roundRect(o.x, o.y, o.w, o.h, 4);
-        } else {
-            ctx.fillRect(o.x, o.y, o.w, o.h);
-        }
-        ctx.fill();
-    });
-
-    // رسم الجزيئات (الانفجار)
-    ctx.shadowBlur = 10;
+    // رسم الانفجارات
+    ctx.shadowBlur = 5;
     particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
-        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.fillRect(p.x, p.y, 4, 4);
     });
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
-
-    // إرجاع الشاشة لبلاصتها بعد الرجة
-    if (screenShake > 0 || !gameActive) {
-        ctx.restore();
-    }
 }
 
-function animate() {
+function loop() {
+    if(!game && particles.length === 0) {
+        if(score > best) { localStorage.setItem('best', score); } 
+        document.getElementById('finalScore').innerText = score;
+        document.getElementById('gameOverScreen').style.display = 'flex';
+        return;
+    }
     update();
     draw();
-    if (gameActive || particles.length > 0 || screenShake > 0) {
-        requestAnimationFrame(animate);
-    }
+    requestAnimationFrame(loop);
 }
 
-function explode() {
-    gameActive = false;
-    screenShake = 20; // قوة الرجة
-    hitSound.play().catch(e => console.log("Sound error"));
-    createParticle(player.x + player.w/2, player.y + player.h/2);
-    
-    setTimeout(() => {
-        document.getElementById("finalScore").innerText = "FINAL SCORE: " + Math.floor(score/10);
-        let goScreen = document.getElementById("gameOverScreen");
-        goScreen.style.display = "flex";
-        goScreen.style.opacity = "0";
-        setTimeout(() => goScreen.style.opacity = "1", 50);
-    }, 1200);
-}
+// تغيير السكين (1 و 2 من الكيبورد)
+window.addEventListener('keydown', e => {
+    if(e.key === '1') player.skin = 0;
+    if(e.key === '2') player.skin = 1;
+});
 </script>
 </body>
 </html>
