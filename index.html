@@ -2,261 +2,318 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>EIKO X-TREME ⚡</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EIKO X-TREME GOD ⚡</title>
+
 <style>
-    :root { --neon: #00ffcc; --danger: #ff0055; --gold: #ffcc00; }
-    body {
-        margin: 0; background: #05050a; color: white;
-        font-family: 'Orbitron', sans-serif; /* إذا كان متاحاً أو سيستخدم sans-serif */
-        display: flex; justify-content: center; align-items: center;
-        height: 100vh; overflow: hidden; touch-action: none;
-    }
-    #wrapper {
-        position: relative; width: 100%; max-width: 450px; height: 100%; max-height: 750px;
-        border: 2px solid rgba(0, 255, 204, 0.2); box-shadow: 0 0 50px rgba(0,0,0,0.5);
-    }
-    canvas { width: 100%; height: 100%; display: block; background: #000; }
-    .ui-layer {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        pointer-events: none; display: flex; flex-direction: column;
-    }
-    #top-bar {
-        padding: 20px; display: flex; justify-content: space-between;
-        font-size: 1.2rem; font-weight: 900; color: var(--neon);
-        text-shadow: 0 0 10px var(--neon);
-    }
-    .overlay {
-        position: absolute; inset: 0; background: rgba(0,0,0,0.9);
-        display: flex; flex-direction: column; justify-content: center;
-        align-items: center; z-index: 100; pointer-events: all;
-        backdrop-filter: blur(10px);
-    }
-    button {
-        background: transparent; border: 2px solid var(--neon); color: var(--neon);
-        padding: 15px 50px; font-size: 1.5rem; cursor: pointer;
-        text-transform: uppercase; letter-spacing: 5px; transition: 0.3s;
-        border-radius: 5px; margin-top: 20px;
-    }
-    button:hover { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); }
-    .score-pop { position: absolute; color: var(--gold); font-weight: bold; pointer-events: none; }
+:root { --neon:#00ffcc; --danger:#ff0055; --gold:#ffcc00; }
+
+body{
+    margin:0;background:#05050a;color:white;
+    display:flex;justify-content:center;align-items:center;
+    height:100vh;overflow:hidden;
+    font-family:sans-serif;
+}
+
+#wrapper{
+    position:relative;width:100%;max-width:450px;height:100%;
+    border:2px solid rgba(0,255,204,0.2);
+}
+
+canvas{width:100%;height:100%;background:#000}
+
+#top-bar{
+    position:absolute;top:0;width:100%;
+    display:flex;justify-content:space-between;
+    padding:10px;color:var(--neon);
+    font-weight:bold;
+}
+
+.overlay{
+    position:absolute;inset:0;background:#000c;
+    display:flex;flex-direction:column;
+    justify-content:center;align-items:center;
+    z-index:10;
+}
+
+button{
+    padding:10px 30px;border:2px solid var(--neon);
+    background:none;color:var(--neon);cursor:pointer;
+}
 </style>
 </head>
+
 <body>
 
 <div id="wrapper">
-    <div id="top-bar">
-        <div>SCORE: <span id="sc">0</span></div>
-        <div style="color:var(--danger)">BEST: <span id="bs">0</span></div>
-    </div>
 
-    <div id="menu" class="overlay">
-        <h1 style="font-size: 3rem; margin: 0; letter-spacing: 10px;">EIKO<span style="color:var(--neon)">-X</span></h1>
-        <p style="color: #666; margin-bottom: 20px;">X-TREME COMBAT SYSTEM</p>
-        <button onclick="init()">START</button>
-    </div>
+<div id="top-bar">
+<div>SCORE: <span id="sc">0</span></div>
+<div style="color:red">BEST: <span id="bs">0</span></div>
+</div>
 
-    <div id="game-over" class="overlay" style="display:none">
-        <h2 style="color:var(--danger); font-size: 3rem;">CORE BREACH</h2>
-        <p id="f-score" style="font-size: 1.5rem;"></p>
-        <button onclick="location.reload()">REBOOT</button>
-    </div>
+<div id="menu" class="overlay">
+<h1>EIKO GOD ⚡</h1>
+<button onclick="init()">START</button>
+</div>
 
-    <canvas id="canvas"></canvas>
+<div id="game-over" class="overlay" style="display:none">
+<h2 style="color:red">GAME OVER</h2>
+<p id="f-score"></p>
+<button onclick="location.reload()">RESTART</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
 </div>
 
 <script>
-const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
-let w, h, player, enemies = [], bullets = [], particles = [], stars = [];
-let score = 0, best = localStorage.getItem('eiko_best') || 0, frame = 0;
-let gameActive = false, shake = 0, slowMo = 1;
+const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
+let w,h;
 
-document.getElementById('bs').innerText = best;
+let player,enemies=[],bullets=[],particles=[],stars=[];
+let score=0,best=localStorage.getItem("best")||0;
+let gameActive=false,frame=0,shake=0,slowMo=1;
+let boss=null;
 
-function resize() {
-    w = canvas.width = canvas.offsetWidth;
-    h = canvas.height = canvas.offsetHeight;
+document.getElementById("bs").innerText=best;
+
+function resize(){
+w=canvas.width=canvas.offsetWidth;
+h=canvas.height=canvas.offsetHeight;
 }
-window.onresize = resize; resize();
+resize();window.onresize=resize;
 
-class Player {
-    constructor() {
-        this.x = w / 2; this.y = h - 80;
-        this.w = 40; this.h = 40;
-        this.targetX = this.x;
-    }
-    draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        // Shadow/Glow
-        ctx.shadowBlur = 20; ctx.shadowColor = '#00ffcc';
-        ctx.fillStyle = '#00ffcc';
-        // Ship Shape
-        ctx.beginPath();
-        ctx.moveTo(0, -20); ctx.lineTo(20, 20); ctx.lineTo(-20, 20);
-        ctx.closePath(); ctx.fill();
-        // Cockpit
-        ctx.fillStyle = '#fff'; ctx.fillRect(-5, 0, 10, 10);
-        ctx.restore();
-    }
-    update() {
-        this.x += (this.targetX - this.x) * 0.15;
-    }
+class Player{
+constructor(){
+this.x=w/2;this.y=h-80;
+this.targetX=this.x;
 }
+draw(){
+ctx.save();
+ctx.translate(this.x,this.y);
+ctx.shadowBlur=25;
+ctx.shadowColor="#00ffcc";
 
-class Enemy {
-    constructor() {
-        this.w = 30 + Math.random() * 40;
-        this.h = 20;
-        this.x = Math.random() * (w - this.w);
-        this.y = -50;
-        this.hp = Math.ceil(this.w / 20);
-        this.speed = (2 + Math.random() * 3) * slowMo;
-    }
-    draw() {
-        ctx.shadowBlur = 10; ctx.shadowColor = '#ff0055';
-        ctx.fillStyle = '#ff0055';
-        ctx.fillRect(this.x, this.y, this.w, this.h);
-        // HP Bar
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(this.x, this.y - 10, (this.hp / Math.ceil(this.w / 20)) * this.w, 3);
-    }
+ctx.fillStyle="#00ffcc";
+ctx.beginPath();
+ctx.moveTo(0,-20);ctx.lineTo(20,20);ctx.lineTo(-20,20);
+ctx.fill();
+
+ctx.fillStyle="#fff";
+ctx.fillRect(-5,0,10,10);
+ctx.restore();
+}
+update(){
+this.x+=(this.targetX-this.x)*0.2;
+}
 }
 
-function spawnStars() {
-    for(let i=0; i<100; i++) stars.push({x: Math.random()*w, y: Math.random()*h, s: Math.random()*2});
+class Enemy{
+constructor(){
+this.w=30+Math.random()*40;
+this.x=Math.random()*(w-this.w);
+this.y=-40;
+this.hp=Math.ceil(this.w/20);
+this.speed=2+Math.random()*3;
+}
+draw(){
+ctx.shadowBlur=15;
+ctx.shadowColor="#ff0055";
+ctx.fillStyle="#ff0055";
+ctx.fillRect(this.x,this.y,this.w,20);
+}
 }
 
-function createExplosion(x, y, color) {
-    shake = 10;
-    for(let i=0; i<20; i++) {
-        particles.push({
-            x, y, 
-            vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, 
-            life: 1, c: color
-        });
-    }
+function spawnStars(){
+for(let i=0;i<100;i++){
+stars.push({x:Math.random()*w,y:Math.random()*h,s:Math.random()*2});
+}
 }
 
-function update() {
-    if(!gameActive) return;
-    frame++;
-    player.update();
-
-    // Starfield
-    stars.forEach(s => {
-        s.y += (speed = 2) * slowMo;
-        if(s.y > h) s.y = 0;
-    });
-
-    // Bullets
-    bullets.forEach((b, i) => {
-        b.y -= 12 * slowMo;
-        if(b.y < 0) bullets.splice(i, 1);
-    });
-
-    // Enemies
-    if(frame % Math.max(10, 60 - Math.floor(score/500)) === 0) enemies.push(new Enemy());
-    
-    enemies.forEach((e, ei) => {
-        e.y += e.speed;
-        
-        // Collision Bullet-Enemy
-        bullets.forEach((b, bi) => {
-            if(b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
-                e.hp--;
-                bullets.splice(bi, 1);
-                if(e.hp <= 0) {
-                    createExplosion(e.x + e.w/2, e.y + e.h/2, '#ff0055');
-                    enemies.splice(ei, 1);
-                    score += 100;
-                }
-            }
-        });
-
-        // Collision Player-Enemy
-        if(Math.abs(player.x - (e.x + e.w/2)) < 30 && Math.abs(player.y - (e.y + e.h/2)) < 30) {
-            gameOver();
-        }
-
-        if(e.y > h) enemies.splice(ei, 1);
-    });
-
-    particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-        if(p.life <= 0) particles.splice(i, 1);
-    });
-
-    document.getElementById('sc').innerText = score;
+function createExplosion(x,y,c){
+shake=20;
+for(let i=0;i<40;i++){
+particles.push({
+x,y,
+vx:(Math.random()-0.5)*15,
+vy:(Math.random()-0.5)*15,
+life:1,
+size:Math.random()*4,
+c
+});
+}
 }
 
-function draw() {
-    ctx.fillStyle = '#05050a'; ctx.fillRect(0, 0, w, h);
-    
-    ctx.save();
-    if(shake > 0) {
-        ctx.translate(Math.random()*shake - shake/2, Math.random()*shake - shake/2);
-        shake *= 0.9;
-    }
+function update(){
+if(!gameActive)return;
 
-    ctx.fillStyle = '#fff';
-    stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
+frame++;
+player.update();
 
-    bullets.forEach(b => {
-        ctx.shadowBlur = 10; ctx.shadowColor = '#00ffcc';
-        ctx.fillStyle = '#00ffcc';
-        ctx.fillRect(b.x-2, b.y, 4, 15);
-    });
+// stars
+stars.forEach(s=>{
+s.y+=s.s*2*slowMo;
+if(s.y>h){s.y=0;s.x=Math.random()*w;}
+});
 
-    enemies.forEach(e => e.draw());
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.c;
-        ctx.fillRect(p.x, p.y, 3, 3);
-    });
-    ctx.globalAlpha = 1;
+// bullets
+bullets.forEach((b,i)=>{
+b.y-=12*slowMo;
+if(b.y<0)bullets.splice(i,1);
+});
 
-    player.draw();
-    ctx.restore();
+// enemies spawn
+if(frame%40===0)enemies.push(new Enemy());
+
+// boss
+if(score>2000 && !boss){
+boss={x:w/2-60,y:50,w:120,h:40,hp:60};
 }
 
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
+enemies.forEach((e,ei)=>{
+e.y+=e.speed;
+e.x+=Math.sin(frame*0.05+ei)*2;
+
+// collision
+bullets.forEach((b,bi)=>{
+if(b.x>e.x && b.x<e.x+e.w && b.y>e.y && b.y<e.y+20){
+e.hp--;
+bullets.splice(bi,1);
+
+if(e.hp<=0){
+createExplosion(e.x,e.y,"#ff0055");
+enemies.splice(ei,1);
+score+=100;
+
+slowMo=0.5;
+setTimeout(()=>slowMo=1,100);
+}
+}
+});
+
+if(Math.abs(player.x-(e.x+e.w/2))<30 && Math.abs(player.y-e.y)<30){
+gameOver();
 }
 
-function init() {
-    document.getElementById('menu').style.display = 'none';
-    player = new Player();
-    spawnStars();
-    gameActive = true;
-    loop();
+});
+
+// boss hit
+if(boss){
+bullets.forEach((b,bi)=>{
+if(b.x>boss.x && b.x<boss.x+boss.w && b.y>boss.y && b.y<boss.y+boss.h){
+boss.hp--;
+bullets.splice(bi,1);
+if(boss.hp<=0){
+createExplosion(boss.x,boss.y,"red");
+boss=null;
+score+=1000;
+}
+}
+});
 }
 
-function gameOver() {
-    gameActive = false;
-    createExplosion(player.x, player.y, '#00ffcc');
-    if(score > best) localStorage.setItem('eiko_best', score);
-    document.getElementById('f-score').innerText = "FINAL SCORE: " + score;
-    setTimeout(() => {
-        document.getElementById('game-over').style.display = 'flex';
-    }, 1000);
+// particles
+particles.forEach((p,i)=>{
+p.x+=p.vx;
+p.y+=p.vy;
+p.life-=0.02;
+if(p.life<=0)particles.splice(i,1);
+});
+
+document.getElementById("sc").innerText=score;
 }
 
-// Controls
-const handleMove = (e) => {
-    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    let rect = canvas.getBoundingClientRect();
-    player.targetX = (clientX - rect.left) * (w / rect.width);
-};
+function draw(){
+ctx.fillStyle="#05050a";
+ctx.fillRect(0,0,w,h);
 
-canvas.addEventListener('mousemove', handleMove);
-canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive: false});
+ctx.save();
 
-const shoot = () => { if(gameActive) bullets.push({x: player.x, y: player.y - 20}); };
-window.addEventListener('mousedown', shoot);
-window.addEventListener('touchstart', (e) => { e.preventDefault(); shoot(); }, {passive: false});
+if(shake>0){
+ctx.translate(Math.random()*shake-shake/2,Math.random()*shake-shake/2);
+shake*=0.9;
+}
+
+// stars
+ctx.fillStyle="#fff";
+stars.forEach(s=>ctx.fillRect(s.x,s.y,s.s,s.s));
+
+// bullets + trail
+bullets.forEach(b=>{
+ctx.shadowBlur=25;
+ctx.shadowColor="#00ffcc";
+
+ctx.beginPath();
+ctx.moveTo(b.x,b.y+20);
+ctx.lineTo(b.x,b.y+40);
+ctx.strokeStyle="rgba(0,255,204,0.3)";
+ctx.lineWidth=4;
+ctx.stroke();
+
+ctx.fillStyle="#00ffcc";
+ctx.fillRect(b.x-2,b.y,4,15);
+});
+
+// enemies
+enemies.forEach(e=>e.draw());
+
+// boss
+if(boss){
+ctx.fillStyle="red";
+ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
+}
+
+// particles
+particles.forEach(p=>{
+ctx.globalAlpha=p.life;
+ctx.fillStyle=p.c;
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+ctx.fill();
+});
+ctx.globalAlpha=1;
+
+player.draw();
+ctx.restore();
+}
+
+function loop(){
+update();draw();
+requestAnimationFrame(loop);
+}
+
+function init(){
+document.getElementById("menu").style.display="none";
+player=new Player();
+spawnStars();
+gameActive=true;
+
+// AUTO FIRE
+setInterval(()=>{
+if(gameActive)bullets.push({x:player.x,y:player.y-20});
+},120);
+
+loop();
+}
+
+function gameOver(){
+gameActive=false;
+createExplosion(player.x,player.y,"#00ffcc");
+
+if(score>best)localStorage.setItem("best",score);
+
+document.getElementById("f-score").innerText="Score: "+score;
+setTimeout(()=>{
+document.getElementById("game-over").style.display="flex";
+},1000);
+}
+
+// controls
+canvas.addEventListener("mousemove",e=>{
+let rect=canvas.getBoundingClientRect();
+player.targetX=(e.clientX-rect.left)*(w/rect.width);
+});
 
 </script>
 </body>
