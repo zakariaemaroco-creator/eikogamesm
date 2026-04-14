@@ -2,41 +2,82 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>EIKO ELITE PRO 🔥</title>
 <style>
-    :root { --neon: #00ffcc; --danger: #ff0055; }
+    :root { 
+        --neon: #00ffcc; 
+        --danger: #ff0055; 
+        --bg-dark: #020205;
+    }
     body {
-        margin: 0; background: #020205; color: white;
+        margin: 0; 
+        background: var(--bg-dark); 
+        color: white;
         font-family: 'Segoe UI', system-ui, sans-serif;
-        display: flex; justify-content: center; align-items: center;
-        height: 100vh; overflow: hidden;
+        display: flex; 
+        justify-content: center; 
+        align-items: center;
+        height: 100vh; 
+        overflow: hidden;
+        user-select: none; /* منع تحديد النصوص */
     }
     #game-container {
-        position: relative; width: 400px; height: 600px;
+        position: relative; 
+        width: 100%; 
+        max-width: 400px; 
+        height: 100%; 
+        max-height: 600px;
         border: 2px solid rgba(0, 255, 204, 0.3);
-        box-shadow: 0 0 40px rgba(0, 0, 0, 1);
+        box-shadow: 0 0 40px rgba(0, 255, 204, 0.1);
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
     }
-    canvas { display: block; background: #000; cursor: none; }
+    /* جعل الكانفاس يتجاوب مع حجم الحاوية */
+    canvas { 
+        display: block; 
+        width: 100%; 
+        height: 100%; 
+        cursor: crosshair;
+        touch-action: none; /* منع الانزلاق فالتيليفون */
+    }
     .overlay {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
+        background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
         display: flex; justify-content: center; align-items: center;
-        flex-direction: column; z-index: 20; transition: 0.5s;
+        flex-direction: column; z-index: 20; transition: 0.5s opacity;
     }
     #stats {
-        position: absolute; top: 20px; left: 0; width: 100%;
+        position: absolute; top: 15px; left: 0; width: 100%;
         pointer-events: none; display: flex; justify-content: space-around;
-        font-weight: 900; font-size: 20px; color: var(--neon); letter-spacing: 2px;
+        font-weight: 900; font-size: 1.2rem; color: var(--neon); letter-spacing: 2px;
+        z-index: 10;
+        text-shadow: 0 0 10px var(--neon);
     }
     button {
-        padding: 15px 45px; font-size: 18px; background: transparent;
+        padding: 15px 45px; font-size: 1.2rem; background: rgba(0, 255, 204, 0.1);
         color: var(--neon); border: 2px solid var(--neon);
-        cursor: pointer; font-weight: bold; letter-spacing: 2px;
-        transition: 0.3s; border-radius: 4px;
+        cursor: pointer; font-weight: bold; letter-spacing: 3px;
+        transition: all 0.3s ease; border-radius: 8px;
+        text-transform: uppercase;
     }
-    button:hover { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); }
-    .wasted { color: var(--danger); text-shadow: 0 0 20px var(--danger); font-size: 3rem; }
+    button:hover, button:active { 
+        background: var(--neon); 
+        color: #000; 
+        box-shadow: 0 0 30px var(--neon); 
+        transform: scale(1.05);
+    }
+    .wasted { 
+        color: var(--danger); 
+        text-shadow: 0 0 25px var(--danger); 
+        font-size: 3rem; 
+        margin-bottom: 10px;
+        letter-spacing: 5px;
+    }
+    .title-pro {
+        font-size: 3rem; margin-bottom: 40px; letter-spacing: 4px;
+    }
 </style>
 </head>
 <body>
@@ -48,13 +89,13 @@
     </div>
 
     <div id="menu" class="overlay">
-        <h1 style="font-size: 2.5rem; margin-bottom: 30px;">EIKO <span style="color:var(--neon)">PRO</span></h1>
+        <h1 class="title-pro">EIKO <span style="color:var(--neon)">PRO</span></h1>
         <button onclick="startGame()">ENGAGE</button>
     </div>
 
     <div id="gameOverScreen" class="overlay" style="display:none;">
         <h1 class="wasted">ELIMINATED</h1>
-        <p id="finalScore" style="margin-bottom: 20px;"></p>
+        <p id="finalScore" style="margin-bottom: 30px; font-size: 1.5rem; color: #fff;"></p>
         <button onclick="location.reload()">TRY AGAIN</button>
     </div>
 
@@ -69,33 +110,58 @@ const canvas = document.getElementById("c"), ctx = canvas.getContext("2d");
 const sVal = document.getElementById("sVal"), lVal = document.getElementById("lVal");
 const music = document.getElementById("bgMusic"), hitSound = document.getElementById("hitSound");
 
-let gameActive = false, score = 0, speed = 4, level = 1;
+let gameActive = false, score = 0, speed = 4, level = 1, screenShake = 0;
 let obstacles = [], particles = [], stars = [];
 
-// Create Stars for background
-for(let i=0; i<50; i++) stars.push({x: Math.random()*400, y: Math.random()*600, s: Math.random()*2});
+// إنشاء النجوم للخلفية
+for(let i=0; i<70; i++) {
+    stars.push({
+        x: Math.random() * canvas.width, 
+        y: Math.random() * canvas.height, 
+        s: Math.random() * 2.5,
+        alpha: Math.random()
+    });
+}
 
 const player = { x: 185, y: 530, w: 30, h: 30, targetX: 185 };
 
-canvas.addEventListener("mousemove", (e) => {
+// دالة حساب موقع الماوس أو الإصبع بدقة
+function updatePlayerPosition(clientX) {
+    if (!gameActive) return;
     const rect = canvas.getBoundingClientRect();
-    player.targetX = e.clientX - rect.left - player.w/2;
-});
+    const scaleX = canvas.width / rect.width; // حساب نسبة التكبير/التصغير
+    let newX = (clientX - rect.left) * scaleX - player.w / 2;
+    
+    // منع اللاعب من الخروج من الشاشة
+    player.targetX = Math.max(0, Math.min(canvas.width - player.w, newX));
+}
+
+// دعم الماوس (للبيسي)
+canvas.addEventListener("mousemove", (e) => updatePlayerPosition(e.clientX));
+
+// دعم اللمس (للتليفون)
+canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault(); // منع الشاشة من التحرك
+    updatePlayerPosition(e.touches[0].clientX);
+}, { passive: false });
 
 function startGame() {
-    document.getElementById("menu").style.display = "none";
+    document.getElementById("menu").style.opacity = "0";
+    setTimeout(() => document.getElementById("menu").style.display = "none", 500);
     gameActive = true;
-    music.volume = 0.3;
-    music.play();
+    music.volume = 0.4;
+    music.play().catch(e => console.log("Audio play prevented by browser"));
     animate();
 }
 
 function createParticle(x, y) {
-    for(let i=0; i<15; i++) {
+    for(let i=0; i<30; i++) {
         particles.push({
             x: x, y: y,
-            vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10,
-            life: 1.0, color: i % 2 == 0 ? "#00ffcc" : "#fff"
+            vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15,
+            life: 1.0, 
+            color: Math.random() > 0.5 ? "#00ffcc" : "#ff0055",
+            size: Math.random() * 4 + 1
         });
     }
 }
@@ -103,88 +169,151 @@ function createParticle(x, y) {
 function update() {
     if (!gameActive) return;
 
-    // Background Stars
+    // تحريك النجوم (تأثير المنظر - Parallax)
     stars.forEach(st => {
-        st.y += speed * 0.5;
-        if(st.y > 600) st.y = 0;
+        st.y += speed * 0.4 * (st.s);
+        if(st.y > canvas.height) {
+            st.y = 0;
+            st.x = Math.random() * canvas.width;
+        }
     });
 
-    player.x += (player.targetX - player.x) * 0.15;
+    // حركة اللاعب سلسة (Lerp)
+    player.x += (player.targetX - player.x) * 0.2;
     score++;
-    if(score % 1000 === 0) { level++; speed += 0.8; }
+    
+    // زيادة الصعوبة
+    if(score % 800 === 0) { level++; speed += 0.6; }
 
-    if (Math.random() < 0.05 + (level*0.01)) {
-        let w = Math.random()*70 + 30;
-        obstacles.push({ x: Math.random()*(400-w), y: -40, w: w, h: 12, speed: speed + Math.random() });
+    // توليد العقبات
+    if (Math.random() < 0.05 + (level*0.008)) {
+        let w = Math.random()*80 + 30;
+        obstacles.push({ 
+            x: Math.random()*(canvas.width - w), 
+            y: -40, 
+            w: w, h: 15, 
+            speed: speed + Math.random()*2 
+        });
     }
 
+    // تحديث العقبات والتأكد من الاصطدام
     obstacles.forEach((o, i) => {
         o.y += o.speed;
+        
+        // خوارزمية الاصطدام AABB
         if (player.x < o.x + o.w && player.x + player.w > o.x && 
             player.y < o.y + o.h && player.y + player.h > o.y) {
             explode();
         }
-        if (o.y > 600) obstacles.splice(i, 1);
+        
+        // مسح العقبات لي فاتت الشاشة
+        if (o.y > canvas.height) obstacles.splice(i, 1);
     });
 
+    // تحديث الجزيئات (Particles)
     particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        p.x += p.vx; p.y += p.vy; 
+        p.life -= 0.02;
         if(p.life <= 0) particles.splice(i, 1);
     });
 
+    // تحديث النقاط فالشاشة
     sVal.innerText = Math.floor(score/10);
     lVal.innerText = level;
 }
 
 function draw() {
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, 400, 600);
+    ctx.fillStyle = "#020205";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Stars
-    ctx.fillStyle = "#fff";
-    stars.forEach(st => ctx.fillRect(st.x, st.y, st.s, st.s));
-
-    // Player
-    if(gameActive) {
-        ctx.shadowBlur = 15; ctx.shadowColor = "#00ffcc";
-        ctx.fillStyle = "#00ffcc";
-        ctx.beginPath();
-        ctx.roundRect(player.x, player.y, player.w, player.h, 4);
-        ctx.fill();
+    // تأثير رجة الشاشة (Screen Shake)
+    if (screenShake > 0) {
+        ctx.save();
+        let dx = (Math.random() - 0.5) * screenShake;
+        let dy = (Math.random() - 0.5) * screenShake;
+        ctx.translate(dx, dy);
+        screenShake -= 1;
     }
 
-    // Obstacles
-    ctx.shadowBlur = 10; ctx.shadowColor = "#ff0055";
+    // رسم النجوم
+    stars.forEach(st => {
+        ctx.globalAlpha = st.alpha;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(st.x, st.y, st.s, st.s);
+    });
+    ctx.globalAlpha = 1;
+
+    // رسم اللاعب
+    if(gameActive) {
+        ctx.shadowBlur = 20; 
+        ctx.shadowColor = "#00ffcc";
+        ctx.fillStyle = "#00ffcc";
+        ctx.beginPath();
+        // استخدام خاصية التدوير للحواف (تدعمها أغلب المتصفحات الحديثة)
+        if(ctx.roundRect) {
+            ctx.roundRect(player.x, player.y, player.w, player.h, 6);
+        } else {
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+        }
+        ctx.fill();
+        
+        // نواة اللاعب (Core)
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(player.x + 10, player.y + 10, 10, 10);
+    }
+
+    // رسم العقبات
+    ctx.shadowBlur = 15; 
+    ctx.shadowColor = "#ff0055";
     ctx.fillStyle = "#ff0055";
     obstacles.forEach(o => {
         ctx.beginPath();
-        ctx.roundRect(o.x, o.y, o.w, o.h, 2);
+        if(ctx.roundRect) {
+            ctx.roundRect(o.x, o.y, o.w, o.h, 4);
+        } else {
+            ctx.fillRect(o.x, o.y, o.w, o.h);
+        }
         ctx.fill();
     });
 
-    // Particles
+    // رسم الجزيئات (الانفجار)
+    ctx.shadowBlur = 10;
     particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, 4, 4);
+        ctx.shadowColor = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
     });
     ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    // إرجاع الشاشة لبلاصتها بعد الرجة
+    if (screenShake > 0 || !gameActive) {
+        ctx.restore();
+    }
 }
 
 function animate() {
     update();
     draw();
-    if (gameActive || particles.length > 0) requestAnimationFrame(animate);
+    if (gameActive || particles.length > 0 || screenShake > 0) {
+        requestAnimationFrame(animate);
+    }
 }
 
 function explode() {
     gameActive = false;
-    hitSound.play();
-    createParticle(player.x + 15, player.y + 15);
+    screenShake = 20; // قوة الرجة
+    hitSound.play().catch(e => console.log("Sound error"));
+    createParticle(player.x + player.w/2, player.y + player.h/2);
+    
     setTimeout(() => {
         document.getElementById("finalScore").innerText = "FINAL SCORE: " + Math.floor(score/10);
-        document.getElementById("gameOverScreen").style.display = "flex";
-    }, 1000);
+        let goScreen = document.getElementById("gameOverScreen");
+        goScreen.style.display = "flex";
+        goScreen.style.opacity = "0";
+        setTimeout(() => goScreen.style.opacity = "1", 50);
+    }, 1200);
 }
 </script>
 </body>
