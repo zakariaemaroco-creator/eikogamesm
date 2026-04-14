@@ -3,197 +3,261 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>EIKO PRO MAX 🚀</title>
+<title>EIKO X-TREME ⚡</title>
 <style>
-:root{--neon:#00ffc3;--danger:#ff0055; --bg:#020205;}
-body{margin:0;background:var(--bg);font-family:'Segoe UI', sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;color:#fff; user-select: none; touch-action: none;}
-#game{width:100%;max-width:400px;height:100%;max-height:600px;position:relative;border-radius:15px;overflow:hidden;box-shadow:0 0 40px #00ffc344;background:#000}
-canvas{display:block;width:100%;height:100%; cursor: crosshair;}
-#ui{position:absolute;top:15px;width:100%;display:flex;justify-content:space-around;font-weight:bold;font-size:1.2rem;color:var(--neon); text-shadow: 0 0 10px var(--neon); z-index: 10; pointer-events: none;}
-.overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);display:flex;justify-content:center;align-items:center;flex-direction:column;z-index: 20;}
-button{padding:15px 45px;font-size:1.2rem;border-radius:10px;border:2px solid var(--neon);background:rgba(0, 255, 195, 0.1);color:var(--neon);cursor:pointer;font-weight:bold;letter-spacing:2px;transition:0.3s;}
-button:hover{background:var(--neon);color:#000;box-shadow:0 0 20px var(--neon);transform:scale(1.05);}
-h1{letter-spacing:3px; margin-bottom: 30px;}
-.wasted {color: var(--danger); text-shadow: 0 0 20px var(--danger); font-size: 2.5rem;}
+    :root { --neon: #00ffcc; --danger: #ff0055; --gold: #ffcc00; }
+    body {
+        margin: 0; background: #05050a; color: white;
+        font-family: 'Orbitron', sans-serif; /* إذا كان متاحاً أو سيستخدم sans-serif */
+        display: flex; justify-content: center; align-items: center;
+        height: 100vh; overflow: hidden; touch-action: none;
+    }
+    #wrapper {
+        position: relative; width: 100%; max-width: 450px; height: 100%; max-height: 750px;
+        border: 2px solid rgba(0, 255, 204, 0.2); box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    }
+    canvas { width: 100%; height: 100%; display: block; background: #000; }
+    .ui-layer {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; display: flex; flex-direction: column;
+    }
+    #top-bar {
+        padding: 20px; display: flex; justify-content: space-between;
+        font-size: 1.2rem; font-weight: 900; color: var(--neon);
+        text-shadow: 0 0 10px var(--neon);
+    }
+    .overlay {
+        position: absolute; inset: 0; background: rgba(0,0,0,0.9);
+        display: flex; flex-direction: column; justify-content: center;
+        align-items: center; z-index: 100; pointer-events: all;
+        backdrop-filter: blur(10px);
+    }
+    button {
+        background: transparent; border: 2px solid var(--neon); color: var(--neon);
+        padding: 15px 50px; font-size: 1.5rem; cursor: pointer;
+        text-transform: uppercase; letter-spacing: 5px; transition: 0.3s;
+        border-radius: 5px; margin-top: 20px;
+    }
+    button:hover { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); }
+    .score-pop { position: absolute; color: var(--gold); font-weight: bold; pointer-events: none; }
 </style>
 </head>
 <body>
-<div id="game">
-    <div id="ui">
-        <span>SCORE: <span id="s">0</span></span>
-        <span>BEST: <span id="b">0</span></span>
+
+<div id="wrapper">
+    <div id="top-bar">
+        <div>SCORE: <span id="sc">0</span></div>
+        <div style="color:var(--danger)">BEST: <span id="bs">0</span></div>
     </div>
-    
+
     <div id="menu" class="overlay">
-        <h1>EIKO <span style="color:var(--neon)">PRO MAX</span></h1>
-        <button onclick="start()">PLAY</button>
+        <h1 style="font-size: 3rem; margin: 0; letter-spacing: 10px;">EIKO<span style="color:var(--neon)">-X</span></h1>
+        <p style="color: #666; margin-bottom: 20px;">X-TREME COMBAT SYSTEM</p>
+        <button onclick="init()">START</button>
     </div>
 
-    <div id="gameOverScreen" class="overlay" style="display:none;">
-        <h1 class="wasted">GAME OVER</h1>
-        <p style="font-size: 1.5rem; margin-bottom: 20px;">SCORE: <span id="finalScore">0</span></p>
-        <button onclick="location.reload()">TRY AGAIN</button>
+    <div id="game-over" class="overlay" style="display:none">
+        <h2 style="color:var(--danger); font-size: 3rem;">CORE BREACH</h2>
+        <p id="f-score" style="font-size: 1.5rem;"></p>
+        <button onclick="location.reload()">REBOOT</button>
     </div>
 
-    <canvas id="c" width="400" height="600"></canvas>
+    <canvas id="canvas"></canvas>
 </div>
 
-<audio id="shoot" src="https://cdn.pixabay.com/audio/2022/03/15/audio_4c5b3f3c92.mp3"></audio>
-<audio id="boom" src="https://cdn.pixabay.com/audio/2022/03/10/audio_2c4c36c51f.mp3"></audio>
-
 <script>
-const c = document.getElementById('c'), ctx = c.getContext('2d');
-let player = {x: 180, y: 520, w: 30, h: 30, skin: 0};
-let bullets = [], enemies = [], particles = [];
-let score = 0, best = localStorage.getItem('best') || 0;
-document.getElementById('b').innerText = best;
-let game = false;
+const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+let w, h, player, enemies = [], bullets = [], particles = [], stars = [];
+let score = 0, best = localStorage.getItem('eiko_best') || 0, frame = 0;
+let gameActive = false, shake = 0, slowMo = 1;
 
-const shootSound = document.getElementById('shoot');
-const boom = document.getElementById('boom');
+document.getElementById('bs').innerText = best;
 
-// دالة لتحديد موقع اللاعب بدقة
-function movePlayer(clientX) {
-    if(!game) return;
-    const rect = c.getBoundingClientRect();
-    const scaleX = c.width / rect.width;
-    let newX = (clientX - rect.left) * scaleX - player.w / 2;
-    player.x = Math.max(0, Math.min(c.width - player.w, newX));
+function resize() {
+    w = canvas.width = canvas.offsetWidth;
+    h = canvas.height = canvas.offsetHeight;
 }
+window.onresize = resize; resize();
 
-// التحكم بالماوس (PC)
-c.addEventListener('mousemove', e => movePlayer(e.clientX));
-
-// التحكم باللمس (الهواتف)
-c.addEventListener('touchmove', e => {
-    e.preventDefault();
-    movePlayer(e.touches[0].clientX);
-});
-
-// إطلاق النار (PC + الهواتف)
-function fireBullet() {
-    if(!game) return;
-    bullets.push({x: player.x + 13, y: player.y});
-    shootSound.currentTime = 0;
-    shootSound.play().catch(()=>{});
-}
-c.addEventListener('click', fireBullet);
-c.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    movePlayer(e.touches[0].clientX); // تحديث المكان قبل الإطلاق
-    fireBullet();
-});
-
-function start() {
-    document.getElementById('menu').style.display = 'none';
-    game = true;
-    loop();
-}
-
-function spawn() {
-    if(Math.random() < 0.04 + (score * 0.0001)) { // زيادة الصعوبة تدريجياً
-        let w = Math.random() * 40 + 20;
-        enemies.push({x: Math.random() * (400 - w), y: -20, w: w, h: 20});
+class Player {
+    constructor() {
+        this.x = w / 2; this.y = h - 80;
+        this.w = 40; this.h = 40;
+        this.targetX = this.x;
+    }
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        // Shadow/Glow
+        ctx.shadowBlur = 20; ctx.shadowColor = '#00ffcc';
+        ctx.fillStyle = '#00ffcc';
+        // Ship Shape
+        ctx.beginPath();
+        ctx.moveTo(0, -20); ctx.lineTo(20, 20); ctx.lineTo(-20, 20);
+        ctx.closePath(); ctx.fill();
+        // Cockpit
+        ctx.fillStyle = '#fff'; ctx.fillRect(-5, 0, 10, 10);
+        ctx.restore();
+    }
+    update() {
+        this.x += (this.targetX - this.x) * 0.15;
     }
 }
 
-function explode(x, y) {
-    for(let i = 0; i < 25; i++) {
+class Enemy {
+    constructor() {
+        this.w = 30 + Math.random() * 40;
+        this.h = 20;
+        this.x = Math.random() * (w - this.w);
+        this.y = -50;
+        this.hp = Math.ceil(this.w / 20);
+        this.speed = (2 + Math.random() * 3) * slowMo;
+    }
+    draw() {
+        ctx.shadowBlur = 10; ctx.shadowColor = '#ff0055';
+        ctx.fillStyle = '#ff0055';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+        // HP Bar
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(this.x, this.y - 10, (this.hp / Math.ceil(this.w / 20)) * this.w, 3);
+    }
+}
+
+function spawnStars() {
+    for(let i=0; i<100; i++) stars.push({x: Math.random()*w, y: Math.random()*h, s: Math.random()*2});
+}
+
+function createExplosion(x, y, color) {
+    shake = 10;
+    for(let i=0; i<20; i++) {
         particles.push({
-            x: x + 10, y: y + 10, 
-            vx: (Math.random() - 0.5) * 8, 
-            vy: (Math.random() - 0.5) * 8, 
-            life: 1,
-            color: Math.random() > 0.5 ? '#ff0055' : '#ff8800'
+            x, y, 
+            vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, 
+            life: 1, c: color
         });
     }
-    boom.currentTime = 0;
-    boom.play().catch(()=>{});
 }
 
 function update() {
-    score++;
-    spawn();
+    if(!gameActive) return;
+    frame++;
+    player.update();
 
-    bullets.forEach(b => b.y -= 10); // تسريع الرصاص
-    enemies.forEach(e => e.y += 4 + (score/1000)); // تسريع الأعداء مع الوقت
-
-    // اصطدام الرصاص بالأعداء
-    bullets.forEach((b, bi) => {
-        enemies.forEach((e, ei) => {
-            if(b.x < e.x + e.w && b.x + 4 > e.x && b.y < e.y + e.h && b.y + 10 > e.y) {
-                explode(e.x, e.y);
-                enemies.splice(ei, 1);
-                bullets.splice(bi, 1);
-                score += 50;
-            }
-        });
+    // Starfield
+    stars.forEach(s => {
+        s.y += (speed = 2) * slowMo;
+        if(s.y > h) s.y = 0;
     });
 
-    // اصطدام اللاعب بالأعداء (الخسارة)
-    if(enemies.some(e => player.x < e.x + e.w && player.x + player.w > e.x && player.y < e.y + e.h && player.y + player.h > e.y)) {
-        game = false;
-        explode(player.x, player.y);
-    }
+    // Bullets
+    bullets.forEach((b, i) => {
+        b.y -= 12 * slowMo;
+        if(b.y < 0) bullets.splice(i, 1);
+    });
 
-    particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.03; });
-    particles = particles.filter(p => p.life > 0);
+    // Enemies
+    if(frame % Math.max(10, 60 - Math.floor(score/500)) === 0) enemies.push(new Enemy());
+    
+    enemies.forEach((e, ei) => {
+        e.y += e.speed;
+        
+        // Collision Bullet-Enemy
+        bullets.forEach((b, bi) => {
+            if(b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
+                e.hp--;
+                bullets.splice(bi, 1);
+                if(e.hp <= 0) {
+                    createExplosion(e.x + e.w/2, e.y + e.h/2, '#ff0055');
+                    enemies.splice(ei, 1);
+                    score += 100;
+                }
+            }
+        });
 
-    bullets = bullets.filter(b => b.y > 0);
-    enemies = enemies.filter(e => e.y < 600);
+        // Collision Player-Enemy
+        if(Math.abs(player.x - (e.x + e.w/2)) < 30 && Math.abs(player.y - (e.y + e.h/2)) < 30) {
+            gameOver();
+        }
 
-    document.getElementById('s').innerText = score;
+        if(e.y > h) enemies.splice(ei, 1);
+    });
+
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        if(p.life <= 0) particles.splice(i, 1);
+    });
+
+    document.getElementById('sc').innerText = score;
 }
 
 function draw() {
-    ctx.fillStyle = '#020205'; 
-    ctx.fillRect(0, 0, 400, 600);
+    ctx.fillStyle = '#05050a'; ctx.fillRect(0, 0, w, h);
+    
+    ctx.save();
+    if(shake > 0) {
+        ctx.translate(Math.random()*shake - shake/2, Math.random()*shake - shake/2);
+        shake *= 0.9;
+    }
 
-    // رسم اللاعب مع Glow
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = player.skin == 0 ? '#00ffc3' : 'orange';
-    ctx.fillStyle = player.skin == 0 ? '#00ffc3' : 'orange';
-    if(game) ctx.fillRect(player.x, player.y, 30, 30);
-
-    // رسم الرصاص
-    ctx.shadowColor = '#fff';
     ctx.fillStyle = '#fff';
-    bullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 12));
+    stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
 
-    // رسم الأعداء
-    ctx.shadowColor = '#ff0055';
-    ctx.fillStyle = '#ff0055';
-    enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
+    bullets.forEach(b => {
+        ctx.shadowBlur = 10; ctx.shadowColor = '#00ffcc';
+        ctx.fillStyle = '#00ffcc';
+        ctx.fillRect(b.x-2, b.y, 4, 15);
+    });
 
-    // رسم الانفجارات
-    ctx.shadowBlur = 5;
+    enemies.forEach(e => e.draw());
     particles.forEach(p => {
         ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.fillRect(p.x, p.y, 4, 4);
+        ctx.fillStyle = p.c;
+        ctx.fillRect(p.x, p.y, 3, 3);
     });
     ctx.globalAlpha = 1;
-    ctx.shadowBlur = 0;
+
+    player.draw();
+    ctx.restore();
 }
 
 function loop() {
-    if(!game && particles.length === 0) {
-        if(score > best) { localStorage.setItem('best', score); } 
-        document.getElementById('finalScore').innerText = score;
-        document.getElementById('gameOverScreen').style.display = 'flex';
-        return;
-    }
     update();
     draw();
     requestAnimationFrame(loop);
 }
 
-// تغيير السكين (1 و 2 من الكيبورد)
-window.addEventListener('keydown', e => {
-    if(e.key === '1') player.skin = 0;
-    if(e.key === '2') player.skin = 1;
-});
+function init() {
+    document.getElementById('menu').style.display = 'none';
+    player = new Player();
+    spawnStars();
+    gameActive = true;
+    loop();
+}
+
+function gameOver() {
+    gameActive = false;
+    createExplosion(player.x, player.y, '#00ffcc');
+    if(score > best) localStorage.setItem('eiko_best', score);
+    document.getElementById('f-score').innerText = "FINAL SCORE: " + score;
+    setTimeout(() => {
+        document.getElementById('game-over').style.display = 'flex';
+    }, 1000);
+}
+
+// Controls
+const handleMove = (e) => {
+    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    let rect = canvas.getBoundingClientRect();
+    player.targetX = (clientX - rect.left) * (w / rect.width);
+};
+
+canvas.addEventListener('mousemove', handleMove);
+canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive: false});
+
+const shoot = () => { if(gameActive) bullets.push({x: player.x, y: player.y - 20}); };
+window.addEventListener('mousedown', shoot);
+window.addEventListener('touchstart', (e) => { e.preventDefault(); shoot(); }, {passive: false});
+
 </script>
 </body>
 </html>
