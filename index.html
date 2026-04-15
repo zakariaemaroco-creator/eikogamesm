@@ -3,63 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EIKO ULTRA GOD 🔥</title>
-
+<title>EIKO ULTRA GOD ⚡</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&display=swap');
+    
+    body {
+        margin: 0;
+        background: #050510;
+        font-family: 'Orbitron', sans-serif;
+        overflow: hidden;
+        color: white;
+        user-select: none;
+    }
 
-body{
-    margin:0;
-    background:#02000a;
-    font-family:Orbitron;
-    overflow:hidden;
-    color:white;
-}
+    /* MENU UI */
+    #menu {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
+        z-index: 10;
+        transition: opacity 0.5s;
+    }
 
-/* MENU */
-#menu{
-    position:absolute;
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    background:radial-gradient(circle,#000,#020b2e);
-}
+    h1 {
+        font-size: 50px;
+        text-shadow: 0 0 20px #0ff, 0 0 40px #f0f;
+        margin-bottom: 50px;
+        letter-spacing: 5px;
+        animation: pulse 2s infinite alternate;
+    }
 
-.btn{
-    padding:20px 40px;
-    margin:10px;
-    background:#111;
-    border-radius:15px;
-    cursor:pointer;
-    box-shadow:0 0 20px #0ff;
-    transition:0.3s;
-}
-.btn:hover{transform:scale(1.1);}
+    @keyframes pulse {
+        0% { transform: scale(1); text-shadow: 0 0 20px #0ff, 0 0 40px #f0f; }
+        100% { transform: scale(1.05); text-shadow: 0 0 30px #0ff, 0 0 60px #f0f; }
+    }
 
-/* UI */
-#ui{
-    position:absolute;
-    top:20px;
-    left:20px;
-    font-size:20px;
-    text-shadow:0 0 10px #0ff;
-    display:none;
-}
+    .btn {
+        padding: 15px 50px;
+        margin: 15px;
+        font-size: 24px;
+        font-weight: 800;
+        background: rgba(0, 255, 255, 0.1);
+        border: 2px solid #0ff;
+        color: #0ff;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5), inset 0 0 10px rgba(0, 255, 255, 0.2);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        text-transform: uppercase;
+    }
 
-canvas{display:none;}
+    .btn:hover {
+        background: #0ff;
+        color: #000;
+        box-shadow: 0 0 30px #0ff, inset 0 0 20px #fff;
+        transform: translateY(-5px) scale(1.05);
+    }
+    
+    .btn.pink {
+        border-color: #f0f;
+        color: #f0f;
+        box-shadow: 0 0 15px rgba(255, 0, 255, 0.5), inset 0 0 10px rgba(255, 0, 255, 0.2);
+    }
+    
+    .btn.pink:hover {
+        background: #f0f;
+        color: #000;
+        box-shadow: 0 0 30px #f0f, inset 0 0 20px #fff;
+    }
+
+    /* IN-GAME UI */
+    #ui {
+        position: absolute;
+        top: 20px; left: 20px;
+        font-size: 24px;
+        text-shadow: 0 0 10px #0ff;
+        display: none;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    canvas { display: block; }
 </style>
 </head>
-
 <body>
 
-<!-- MENU -->
 <div id="menu">
-    <h1>🔥 EIKO ULTRA 🔥</h1>
-    <div class="btn" onclick="startGame('shooter')">🔫 SHOOTER</div>
-    <div class="btn" onclick="startGame('car')">🚗 CAR GAME</div>
+    <h1>EIKO ULTRA ⚡</h1>
+    <div class="btn" onclick="startGame('shooter')">🚀 Galactic Shooter</div>
+    <div class="btn pink" onclick="startGame('car')">🏎️ Neon Highway</div>
 </div>
 
 <div id="ui">
@@ -69,7 +106,6 @@ canvas{display:none;}
 
 <canvas id="c"></canvas>
 
-<!-- SOUNDS -->
 <audio id="shootSound" src="https://assets.mixkit.co/sfx/preview/mixkit-laser-gun-shot-1670.mp3"></audio>
 <audio id="boomSound" src="https://assets.mixkit.co/sfx/preview/mixkit-explosion-1684.mp3"></audio>
 <audio id="music" src="https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3" loop></audio>
@@ -77,165 +113,368 @@ canvas{display:none;}
 <script>
 const c = document.getElementById("c");
 const ctx = c.getContext("2d");
-
 let w = innerWidth, h = innerHeight;
-c.width=w; c.height=h;
+c.width = w; c.height = h;
 
-let game="menu";
-let score=0;
-let high=localStorage.getItem("high")||0;
-document.getElementById("high").innerText=high;
+window.addEventListener('resize', () => { w = innerWidth; h = innerHeight; c.width = w; c.height = h; });
 
-// sounds
-const shootSound = document.getElementById("shootSound");
-const boomSound = document.getElementById("boomSound");
-const music = document.getElementById("music");
+// Globals
+let state = "menu"; // menu, shooter, car, gameover
+let score = 0, frames = 0, shake = 0;
+let high = localStorage.getItem("eiko_high") || 0;
+document.getElementById("high").innerText = high;
 
-// ---------- START GAME ----------
-function startGame(type){
-    game=type;
-    document.getElementById("menu").style.display="none";
-    document.getElementById("ui").style.display="block";
-    c.style.display="block";
-    music.play();
-    init();
+// Audio Setup
+const sfx = {
+    shoot: document.getElementById("shootSound"),
+    boom: document.getElementById("boomSound"),
+    bgm: document.getElementById("music")
+};
+sfx.bgm.volume = 0.5;
+
+function playSound(snd) {
+    snd.currentTime = 0;
+    snd.play().catch(()=>{}); // Catch errors if browser blocks autoplay
 }
 
-// ---------- COMMON ----------
-let player, bullets, enemies, obstacles;
-let mouse={x:w/2,y:h-100};
+// Entities
+let player = {}, bullets = [], enemies = [], particles = [], floatTexts = [], bgElements = [];
+let mouse = { x: w/2, y: h/2 };
 
-// ---------- INIT ----------
-function init(){
-    score=0;
-    bullets=[]; enemies=[]; obstacles=[];
-    player={x:w/2,y:h-100,w:40,h:40};
+const moroccanWords = ["NADI! 🔥", "HARBAN! 🚀", "WA3ER! ⚡", "SDAAA3! 💥"];
+
+// ---------- CORE SYSTEMS ----------
+
+function initBase() {
+    score = 0; frames = 0; shake = 0;
+    bullets = []; enemies = []; particles = []; floatTexts = []; bgElements = [];
+    document.getElementById("sc").innerText = score;
 }
 
-// ---------- SHOOTER ----------
-function shooterUpdate(){
-    player.x += (mouse.x-player.x)*0.2;
+function spawnParticle(x, y, color, amount, speedMult = 1) {
+    for(let i=0; i<amount; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 10 * speedMult,
+            vy: (Math.random() - 0.5) * 10 * speedMult,
+            life: 1, color, size: Math.random() * 4 + 2
+        });
+    }
+}
 
-    if(Math.random()<0.05){
-        enemies.push({x:Math.random()*w,y:-50,size:20});
+function spawnText(x, y, text, color) {
+    floatTexts.push({ x, y, text, color, life: 1, vy: -2 });
+}
+
+function updateDrawSystems() {
+    // Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx; p.y += p.vy;
+        p.life -= 0.03; p.size *= 0.95;
+        if (p.life <= 0) particles.splice(i, 1);
+        else {
+            ctx.shadowBlur = 10; ctx.shadowColor = p.color;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+        }
+    }
+    ctx.globalAlpha = 1;
+
+    // Floating Texts
+    for (let i = floatTexts.length - 1; i >= 0; i--) {
+        let ft = floatTexts[i];
+        ft.y += ft.vy; ft.life -= 0.02;
+        if (ft.life <= 0) floatTexts.splice(i, 1);
+        else {
+            ctx.fillStyle = ft.color;
+            ctx.globalAlpha = ft.life;
+            ctx.font = "bold 25px Orbitron";
+            ctx.textAlign = "center";
+            ctx.fillText(ft.text, ft.x, ft.y);
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+// ---------- SHOOTER GAME ----------
+
+function initShooter() {
+    initBase();
+    player = { x: w/2, y: h-100, size: 20, color: '#0ff' };
+    for(let i=0; i<100; i++) bgElements.push({ x: Math.random()*w, y: Math.random()*h, s: Math.random()*2+1, v: Math.random()*3+1 });
+}
+
+function updateShooter() {
+    player.x += (mouse.x - player.x) * 0.15;
+    player.y += (mouse.y - player.y) * 0.15;
+
+    // Background Stars
+    bgElements.forEach(s => {
+        s.y += s.v;
+        if(s.y > h) { s.y = 0; s.x = Math.random()*w; }
+    });
+
+    // Auto Shoot
+    if(frames % 8 === 0) {
+        bullets.push({ x: player.x - 10, y: player.y, v: -15, color: '#0ff' });
+        bullets.push({ x: player.x + 10, y: player.y, v: -15, color: '#0ff' });
+        playSound(sfx.shoot);
     }
 
-    bullets.push({x:player.x,y:player.y,v:-10});
-    shootSound.currentTime=0; shootSound.play();
+    // Spawn Enemies
+    if(frames % Math.max(15, 50 - Math.floor(score/500)) === 0) {
+        enemies.push({ x: Math.random()*(w-40)+20, y: -50, size: Math.random()*15+15, speed: Math.random()*3+2, hp: 2 });
+    }
 
-    bullets.forEach(b=>b.y+=b.v);
+    // Bullets Logic
+    for(let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.y += b.v;
+        if(b.y < -50) bullets.splice(i, 1);
+    }
 
-    enemies.forEach(e=>{
-        e.y+=4;
+    // Enemies Logic
+    for(let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        e.y += e.speed;
 
-        bullets.forEach(b=>{
-            if(Math.hypot(b.x-e.x,b.y-e.y)<20){
-                boomSound.play();
-                score+=100;
-                e.y=9999;
+        // Player collision
+        if(Math.hypot(player.x - e.x, player.y - e.y) < player.size + e.size) triggerGameOver();
+
+        // Bullet collision
+        for(let j = bullets.length - 1; j >= 0; j--) {
+            let b = bullets[j];
+            if(Math.hypot(b.x - e.x, b.y - e.y) < e.size + 5) {
+                e.hp--;
+                bullets.splice(j, 1);
+                spawnParticle(b.x, b.y, '#fff', 5, 0.5); // hit spark
+                if(e.hp <= 0) {
+                    spawnParticle(e.x, e.y, '#ff0055', 20);
+                    playSound(sfx.boom);
+                    shake = 10;
+                    score += 100;
+                    if(Math.random() < 0.1) spawnText(e.x, e.y, moroccanWords[Math.floor(Math.random()*moroccanWords.length)], "#ffea00");
+                    enemies.splice(i, 1);
+                    document.getElementById("sc").innerText = score;
+                    break;
+                }
             }
-        });
-
-        if(Math.hypot(player.x-e.x,player.y-e.y)<30){
-            gameOver();
         }
+    }
+}
+
+function drawShooter() {
+    ctx.fillStyle = "rgba(2, 0, 10, 0.4)"; ctx.fillRect(0, 0, w, h); // Motion blur
+
+    // Stars
+    ctx.fillStyle = "#fff";
+    bgElements.forEach(s => { ctx.globalAlpha = s.s/3; ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill(); });
+    ctx.globalAlpha = 1;
+
+    // Player
+    ctx.shadowBlur = 20; ctx.shadowColor = player.color;
+    ctx.fillStyle = player.color;
+    ctx.beginPath();
+    ctx.moveTo(player.x, player.y - player.size);
+    ctx.lineTo(player.x + player.size, player.y + player.size);
+    ctx.lineTo(player.x - player.size, player.y + player.size);
+    ctx.fill();
+
+    // Bullets
+    bullets.forEach(b => {
+        ctx.shadowBlur = 10; ctx.shadowColor = b.color;
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x - 2, b.y, 4, 15);
+    });
+
+    // Enemies
+    enemies.forEach(e => {
+        ctx.shadowBlur = 15; ctx.shadowColor = "#ff0055";
+        ctx.fillStyle = "#ff0055";
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y + e.size);
+        ctx.lineTo(e.x + e.size, e.y - e.size);
+        ctx.lineTo(e.x - e.size, e.y - e.size);
+        ctx.fill();
     });
 }
 
-// ---------- CAR ----------
-let roadX=150;
-let targetX=w/2;
+// ---------- CAR GAME ----------
 
-function carUpdate(){
-    player.x += (targetX-player.x)*0.2;
+function initCar() {
+    initBase();
+    player = { x: w/2, y: h-150, w: 40, h: 70, color: '#f0f' };
+    for(let i=0; i<10; i++) bgElements.push({ y: i*(h/10) }); // Road lines
+}
 
-    if(Math.random()<0.03){
-        obstacles.push({x:roadX+Math.random()*200,y:-100});
-    }
+function updateCar() {
+    // Smooth horizontal movement
+    player.x += (mouse.x - player.x) * 0.15;
+    // Constrain to road
+    let roadW = Math.min(w * 0.8, 600);
+    let roadX = w/2 - roadW/2;
+    if(player.x < roadX + 20) player.x = roadX + 20;
+    if(player.x > roadX + roadW - 20) player.x = roadX + roadW - 20;
 
-    obstacles.forEach(o=>{
-        o.y+=6;
+    let speed = 10 + Math.floor(score/500);
 
-        if(
-            player.x<o.x+40 &&
-            player.x+40>o.x &&
-            player.y<o.y+80 &&
-            player.y+40>o.y
-        ){
-            gameOver();
-        }
+    // Car exhaust particles
+    if(frames % 2 === 0) spawnParticle(player.x, player.y + player.h/2, '#0ff', 2, 0.3);
+
+    // Road Lines
+    bgElements.forEach(line => {
+        line.y += speed;
+        if(line.y > h) line.y = 0;
     });
 
-    score++;
-}
-
-// ---------- DRAW ----------
-function draw(){
-    ctx.clearRect(0,0,w,h);
-
-    if(game==="shooter"){
-        ctx.fillStyle="cyan";
-        ctx.fillRect(player.x,player.y,10,20);
-
-        bullets.forEach(b=>{
-            ctx.fillRect(b.x,b.y,4,10);
-        });
-
-        enemies.forEach(e=>{
-            ctx.fillStyle="red";
-            ctx.beginPath();
-            ctx.arc(e.x,e.y,e.size,0,Math.PI*2);
-            ctx.fill();
-        });
+    // Spawn Enemies
+    if(frames % Math.max(20, 60 - Math.floor(score/200)) === 0) {
+        enemies.push({ x: roadX + Math.random()*(roadW-50), y: -100, w: 40, h: 70 });
     }
 
-    if(game==="car"){
-        ctx.fillStyle="#222";
-        ctx.fillRect(roadX,0,300,h);
+    // Enemies Logic
+    for(let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        e.y += speed - 3; // They move slower than road (appear to come towards us)
 
-        ctx.fillStyle="red";
-        ctx.fillRect(player.x,player.y,40,80);
+        // Collision
+        if (player.x < e.x + e.w && player.x + player.w > e.x &&
+            player.y - player.h/2 < e.y + e.h && player.y + player.h/2 > e.y) {
+            spawnParticle(player.x, player.y, '#f0f', 30, 2);
+            playSound(sfx.boom);
+            triggerGameOver();
+        }
 
-        ctx.fillStyle="yellow";
-        obstacles.forEach(o=>{
-            ctx.fillRect(o.x,o.y,40,80);
-        });
+        if(e.y > h + 100) {
+            enemies.splice(i, 1);
+            score += 50;
+            document.getElementById("sc").innerText = score;
+            if(score % 500 === 0) spawnText(w/2, h/3, moroccanWords[Math.floor(Math.random()*moroccanWords.length)], "#0ff");
+        }
     }
-
-    document.getElementById("sc").innerText=score;
 }
 
-// ---------- GAME LOOP ----------
-function loop(){
-    if(game==="shooter") shooterUpdate();
-    if(game==="car") carUpdate();
+function drawCar() {
+    ctx.fillStyle = "#02000a"; ctx.fillRect(0, 0, w, h);
 
-    if(game!=="menu") draw();
+    let roadW = Math.min(w * 0.8, 600);
+    let roadX = w/2 - roadW/2;
+
+    // Draw Road (Cyberpunk grid style)
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#0a0a1a"; ctx.fillRect(roadX, 0, roadW, h);
+    ctx.strokeStyle = "#f0f"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(roadX, 0); ctx.lineTo(roadX, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(roadX + roadW, 0); ctx.lineTo(roadX + roadW, h); ctx.stroke();
+
+    // Center Lines
+    ctx.shadowBlur = 10; ctx.shadowColor = "#0ff";
+    ctx.fillStyle = "#0ff";
+    bgElements.forEach(line => { ctx.fillRect(w/2 - 5, line.y, 10, 40); });
+
+    // Enemies (Red Cars)
+    ctx.shadowBlur = 20; ctx.shadowColor = "#ff0055";
+    ctx.fillStyle = "#ff0055";
+    enemies.forEach(e => {
+        ctx.fillRect(e.x, e.y, e.w, e.h);
+        ctx.fillStyle = "#222"; ctx.fillRect(e.x+5, e.y+15, e.w-10, e.h-30); // windshield
+        ctx.fillStyle = "#ff0055";
+    });
+
+    // Player Car
+    ctx.shadowBlur = 25; ctx.shadowColor = player.color;
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x - player.w/2, player.y - player.h/2, player.w, player.h);
+    ctx.fillStyle = "#0ff"; ctx.fillRect(player.x - player.w/2 + 5, player.y - player.h/2 + 20, player.w - 10, player.h - 40); // window
+}
+
+// ---------- MAIN LOOP & STATE ----------
+
+function startGame(type) {
+    state = type;
+    document.getElementById("menu").style.opacity = "0";
+    setTimeout(() => { 
+        document.getElementById("menu").style.display = "none"; 
+        document.getElementById("ui").style.display = "block";
+    }, 500);
+    sfx.bgm.play().catch(()=>{});
+    if(type === 'shooter') initShooter();
+    if(type === 'car') initCar();
+}
+
+function triggerGameOver() {
+    state = "gameover";
+    shake = 20;
+    if(score > high) {
+        high = score;
+        localStorage.setItem("eiko_high", high);
+        document.getElementById("high").innerText = high;
+    }
+}
+
+function loop() {
+    frames++;
+
+    ctx.save();
+    if (shake > 0.5) {
+        ctx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake);
+        shake *= 0.85;
+    }
+
+    if (state === "shooter") { updateShooter(); drawShooter(); updateDrawSystems(); }
+    else if (state === "car") { updateCar(); drawCar(); updateDrawSystems(); }
+    
+    ctx.restore();
+
+    // Draw Game Over Screen over the canvas
+    if (state === "gameover") {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Gradual fade
+        ctx.fillRect(0, 0, w, h);
+        
+        ctx.shadowBlur = 30; ctx.shadowColor = "#ff0055";
+        ctx.fillStyle = "#ff0055";
+        ctx.textAlign = "center";
+        ctx.font = "bold 60px Orbitron";
+        ctx.fillText("GAME OVER", w/2, h/2 - 20);
+        
+        ctx.shadowColor = "#0ff";
+        ctx.fillStyle = "#0ff";
+        ctx.font = "20px Orbitron";
+        ctx.fillText(`SCORE: ${score}`, w/2, h/2 + 30);
+        ctx.fillText("Click / Tap to Return to Menu", w/2, h/2 + 80);
+    }
 
     requestAnimationFrame(loop);
 }
+
+// Controls
+window.addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener("touchmove", e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }, {passive: true});
+
+window.addEventListener("mousedown", () => {
+    if(state === "gameover") {
+        state = "menu";
+        document.getElementById("ui").style.display = "none";
+        document.getElementById("menu").style.display = "flex";
+        setTimeout(() => { document.getElementById("menu").style.opacity = "1"; }, 50);
+        ctx.clearRect(0,0,w,h);
+    }
+});
+window.addEventListener("touchstart", () => {
+    if(state === "gameover") {
+        state = "menu";
+        document.getElementById("ui").style.display = "none";
+        document.getElementById("menu").style.display = "flex";
+        setTimeout(() => { document.getElementById("menu").style.opacity = "1"; }, 50);
+        ctx.clearRect(0,0,w,h);
+    }
+}, {passive: true});
+
+// Start loop
 loop();
 
-// ---------- GAME OVER ----------
-function gameOver(){
-    if(score>high){
-        localStorage.setItem("high",score);
-    }
-    alert("GAME OVER\nScore: "+score);
-    location.reload();
-}
-
-// ---------- CONTROLS ----------
-window.addEventListener("mousemove",e=>{
-    mouse.x=e.clientX;
-    targetX=e.clientX;
-});
-
-window.addEventListener("touchmove",e=>{
-    mouse.x=e.touches[0].clientX;
-    targetX=e.touches[0].clientX;
-});
 </script>
-
 </body>
 </html>
