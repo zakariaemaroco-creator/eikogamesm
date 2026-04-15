@@ -3,367 +3,239 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EIKO NEON OVERDRIVE ⚡</title>
+<title>EIKO ULTRA GOD 🔥</title>
+
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
-    body {
-        margin: 0;
-        background: #02000a;
-        overflow: hidden;
-        font-family: 'Orbitron', sans-serif;
-        user-select: none;
-    }
-    canvas { display: block; }
-    #ui {
-        position: absolute; top: 20px; left: 20px;
-        color: #fff; font-size: 24px;
-        text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
-        pointer-events: none;
-    }
-    #combo {
-        color: #ff0055; font-size: 18px;
-        text-shadow: 0 0 10px #ff0055;
-        margin-top: 5px;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+body{
+    margin:0;
+    background:#02000a;
+    font-family:Orbitron;
+    overflow:hidden;
+    color:white;
+}
+
+/* MENU */
+#menu{
+    position:absolute;
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(circle,#000,#020b2e);
+}
+
+.btn{
+    padding:20px 40px;
+    margin:10px;
+    background:#111;
+    border-radius:15px;
+    cursor:pointer;
+    box-shadow:0 0 20px #0ff;
+    transition:0.3s;
+}
+.btn:hover{transform:scale(1.1);}
+
+/* UI */
+#ui{
+    position:absolute;
+    top:20px;
+    left:20px;
+    font-size:20px;
+    text-shadow:0 0 10px #0ff;
+    display:none;
+}
+
+canvas{display:none;}
 </style>
 </head>
+
 <body>
 
+<!-- MENU -->
+<div id="menu">
+    <h1>🔥 EIKO ULTRA 🔥</h1>
+    <div class="btn" onclick="startGame('shooter')">🔫 SHOOTER</div>
+    <div class="btn" onclick="startGame('car')">🚗 CAR GAME</div>
+</div>
+
 <div id="ui">
-    <div>SCORE: <span id="sc">0</span></div>
-    <div id="combo">Multiplier: x<span id="mult">1</span></div>
+    SCORE: <span id="sc">0</span><br>
+    HIGH: <span id="high">0</span>
 </div>
 
 <canvas id="c"></canvas>
 
+<!-- SOUNDS -->
+<audio id="shootSound" src="https://assets.mixkit.co/sfx/preview/mixkit-laser-gun-shot-1670.mp3"></audio>
+<audio id="boomSound" src="https://assets.mixkit.co/sfx/preview/mixkit-explosion-1684.mp3"></audio>
+<audio id="music" src="https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3" loop></audio>
+
 <script>
-const c = document.getElementById("c"), ctx = c.getContext("2d");
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+
 let w = innerWidth, h = innerHeight;
-c.width = w; c.height = h;
+c.width=w; c.height=h;
 
-window.addEventListener('resize', () => {
-    w = innerWidth; h = innerHeight;
-    c.width = w; c.height = h;
-});
+let game="menu";
+let score=0;
+let high=localStorage.getItem("high")||0;
+document.getElementById("high").innerText=high;
 
-// Game State
-let playing = true;
-let score = 0;
-let combo = 1;
-let frames = 0;
-let shake = 0;
+// sounds
+const shootSound = document.getElementById("shootSound");
+const boomSound = document.getElementById("boomSound");
+const music = document.getElementById("music");
 
-// Inputs
-let mouse = { x: w/2, y: h - 100, isDown: false };
-
-// Arrays
-let player, bullets, enemies, particles, floatingTexts, stars, powerups;
-
-const moroccanWords = ["NADI! ⚡", "SDA3! 🔥", "WA3ER! 💥", "KHATAR! 🚀", "MREGL! 🎯", "ZID! 🌪️"];
-
-function init() {
-    playing = true;
-    score = 0;
-    combo = 1;
-    frames = 0;
-    bullets = []; enemies = []; particles = []; floatingTexts = []; stars = []; powerups = [];
-    
-    player = { 
-        x: w/2, y: h-100, 
-        width: 30, height: 30, 
-        power: 1, color: '#0ff' 
-    };
-
-    for(let i=0; i<100; i++) {
-        stars.push({ x: Math.random()*w, y: Math.random()*h, s: Math.random()*2.5, speed: Math.random()*3 + 1 });
-    }
-    document.getElementById("sc").innerText = score;
-    document.getElementById("mult").innerText = combo;
+// ---------- START GAME ----------
+function startGame(type){
+    game=type;
+    document.getElementById("menu").style.display="none";
+    document.getElementById("ui").style.display="block";
+    c.style.display="block";
+    music.play();
+    init();
 }
 
-// 💥 Effects
-function createExplosion(x, y, color) {
-    shake = 15;
-    for(let i=0; i<40; i++) {
-        particles.push({
-            x, y,
-            vx: (Math.random() - 0.5) * 15,
-            vy: (Math.random() - 0.5) * 15,
-            life: 1,
-            color: color,
-            size: Math.random() * 4 + 2
+// ---------- COMMON ----------
+let player, bullets, enemies, obstacles;
+let mouse={x:w/2,y:h-100};
+
+// ---------- INIT ----------
+function init(){
+    score=0;
+    bullets=[]; enemies=[]; obstacles=[];
+    player={x:w/2,y:h-100,w:40,h:40};
+}
+
+// ---------- SHOOTER ----------
+function shooterUpdate(){
+    player.x += (mouse.x-player.x)*0.2;
+
+    if(Math.random()<0.05){
+        enemies.push({x:Math.random()*w,y:-50,size:20});
+    }
+
+    bullets.push({x:player.x,y:player.y,v:-10});
+    shootSound.currentTime=0; shootSound.play();
+
+    bullets.forEach(b=>b.y+=b.v);
+
+    enemies.forEach(e=>{
+        e.y+=4;
+
+        bullets.forEach(b=>{
+            if(Math.hypot(b.x-e.x,b.y-e.y)<20){
+                boomSound.play();
+                score+=100;
+                e.y=9999;
+            }
+        });
+
+        if(Math.hypot(player.x-e.x,player.y-e.y)<30){
+            gameOver();
+        }
+    });
+}
+
+// ---------- CAR ----------
+let roadX=150;
+let targetX=w/2;
+
+function carUpdate(){
+    player.x += (targetX-player.x)*0.2;
+
+    if(Math.random()<0.03){
+        obstacles.push({x:roadX+Math.random()*200,y:-100});
+    }
+
+    obstacles.forEach(o=>{
+        o.y+=6;
+
+        if(
+            player.x<o.x+40 &&
+            player.x+40>o.x &&
+            player.y<o.y+80 &&
+            player.y+40>o.y
+        ){
+            gameOver();
+        }
+    });
+
+    score++;
+}
+
+// ---------- DRAW ----------
+function draw(){
+    ctx.clearRect(0,0,w,h);
+
+    if(game==="shooter"){
+        ctx.fillStyle="cyan";
+        ctx.fillRect(player.x,player.y,10,20);
+
+        bullets.forEach(b=>{
+            ctx.fillRect(b.x,b.y,4,10);
+        });
+
+        enemies.forEach(e=>{
+            ctx.fillStyle="red";
+            ctx.beginPath();
+            ctx.arc(e.x,e.y,e.size,0,Math.PI*2);
+            ctx.fill();
         });
     }
+
+    if(game==="car"){
+        ctx.fillStyle="#222";
+        ctx.fillRect(roadX,0,300,h);
+
+        ctx.fillStyle="red";
+        ctx.fillRect(player.x,player.y,40,80);
+
+        ctx.fillStyle="yellow";
+        obstacles.forEach(o=>{
+            ctx.fillRect(o.x,o.y,40,80);
+        });
+    }
+
+    document.getElementById("sc").innerText=score;
 }
 
-function spawnFloatingText(x, y, text, color, size = 20) {
-    floatingTexts.push({ x, y, text, color, size, life: 1, vy: -2 });
-}
+// ---------- GAME LOOP ----------
+function loop(){
+    if(game==="shooter") shooterUpdate();
+    if(game==="car") carUpdate();
 
-// 🔫 Mechanics
-function shoot() {
-    if (frames % 6 === 0) { // Fast fire rate
-        if (player.power === 1) {
-            bullets.push({ x: player.x, y: player.y - 15, vx: 0, vy: -15, color: '#0ff' });
-        } else if (player.power >= 2) {
-            bullets.push({ x: player.x - 10, y: player.y - 15, vx: -2, vy: -15, color: '#f0f' });
-            bullets.push({ x: player.x + 10, y: player.y - 15, vx: 2, vy: -15, color: '#f0f' });
-        }
-    }
-}
+    if(game!=="menu") draw();
 
-function spawnEnemy() {
-    let size = Math.random() * 20 + 15;
-    let type = Math.random();
-    let hp = 1, speed = 2 + Math.random() * 3, color = '#ff0055';
-    
-    if (type > 0.8) { hp = 3; speed = 1.5; color = '#ffaa00'; size = 35; } // Tank
-    
-    enemies.push({
-        x: Math.random() * (w - 50) + 25,
-        y: -50,
-        size, hp, speed, color,
-        angle: 0,
-        spin: (Math.random() - 0.5) * 0.2
-    });
-}
-
-function update() {
-    if (!playing) return;
-    frames++;
-
-    // Player smooth movement
-    player.x += (mouse.x - player.x) * 0.15;
-    player.y += (mouse.y - player.y) * 0.15;
-    
-    // Auto shoot
-    shoot();
-
-    // Spawn Enemies
-    if (frames % Math.max(10, 40 - Math.floor(score/1000)) === 0) spawnEnemy();
-
-    // Bullets
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        let b = bullets[i];
-        b.x += b.vx; b.y += b.vy;
-        if (b.y < -50 || b.x < -50 || b.x > w+50) bullets.splice(i, 1);
-    }
-
-    // Powerups
-    for (let i = powerups.length - 1; i >= 0; i--) {
-        let p = powerups[i];
-        p.y += 3;
-        if (Math.hypot(player.x - p.x, player.y - p.y) < player.width + 15) {
-            player.power = 2; player.color = '#f0f';
-            spawnFloatingText(player.x, player.y, "POWER UP!", "#f0f", 25);
-            powerups.splice(i, 1);
-            setTimeout(() => { player.power = 1; player.color = '#0ff'; }, 5000);
-        }
-        else if (p.y > h) powerups.splice(i, 1);
-    }
-
-    // Enemies
-    for (let i = enemies.length - 1; i >= 0; i--) {
-        let e = enemies[i];
-        e.y += e.speed;
-        e.angle += e.spin;
-
-        // Enemy Hits Player
-        if (Math.hypot(player.x - e.x, player.y - e.y) < player.width/2 + e.size/2) {
-            createExplosion(player.x, player.y, '#0ff');
-            playing = false;
-        }
-
-        // Bullets Hit Enemy
-        for (let j = bullets.length - 1; j >= 0; j--) {
-            let b = bullets[j];
-            if (Math.hypot(b.x - e.x, b.y - e.y) < e.size) {
-                e.hp--;
-                createExplosion(b.x, b.y, b.color); // Spark
-                bullets.splice(j, 1);
-                
-                if (e.hp <= 0) {
-                    createExplosion(e.x, e.y, e.color);
-                    score += 100 * combo;
-                    combo++;
-                    
-                    // Random Powerup drop
-                    if(Math.random() < 0.05) powerups.push({x: e.x, y: e.y});
-
-                    // Funny Moroccan Text on big combos
-                    if(combo % 5 === 0) {
-                        let word = moroccanWords[Math.floor(Math.random() * moroccanWords.length)];
-                        spawnFloatingText(e.x, e.y, word, "#ffea00", 30);
-                    } else {
-                        spawnFloatingText(e.x, e.y, `+${100 * combo}`, "#fff");
-                    }
-
-                    enemies.splice(i, 1);
-                    document.getElementById("sc").innerText = score;
-                    document.getElementById("mult").innerText = combo;
-                    break;
-                }
-            }
-        }
-        
-        if (e && e.y > h + 50) {
-            enemies.splice(i, 1);
-            combo = 1; // Reset combo if enemy escapes
-            document.getElementById("mult").innerText = combo;
-        }
-    }
-
-    // Particles
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.x += p.vx; p.y += p.vy;
-        p.vx *= 0.95; p.vy *= 0.95; // Friction
-        p.life -= 0.03;
-        p.size *= 0.95;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-
-    // Floating Text
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        let ft = floatingTexts[i];
-        ft.y += ft.vy;
-        ft.life -= 0.02;
-        if (ft.life <= 0) floatingTexts.splice(i, 1);
-    }
-}
-
-function draw() {
-    // Motion Blur Effect
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = "rgba(2, 0, 10, 0.3)";
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.save();
-    
-    // Screen Shake
-    if (shake > 0.5) {
-        ctx.translate(Math.random()*shake - shake/2, Math.random()*shake - shake/2);
-        shake *= 0.85;
-    }
-
-    ctx.globalCompositeOperation = 'lighter'; // NEON GLOW
-
-    // Stars Parallax
-    stars.forEach(s => {
-        s.y += s.speed + (player.y - h/2)*0.001; // Parallax
-        if (s.y > h) { s.y = 0; s.x = Math.random()*w; }
-        ctx.fillStyle = `rgba(255, 255, 255, ${s.s/2.5})`;
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill();
-    });
-
-    // Bullets
-    bullets.forEach(b => {
-        ctx.shadowBlur = 15; ctx.shadowColor = b.color;
-        ctx.fillStyle = b.color;
-        ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
-        ctx.fillRect(b.x - 1.5, b.y, 3, 15); // Bullet tail
-    });
-
-    // Powerups
-    powerups.forEach(p => {
-        ctx.shadowBlur = 20; ctx.shadowColor = '#0f0';
-        ctx.fillStyle = '#0f0';
-        ctx.font = '20px Orbitron';
-        ctx.fillText("P", p.x - 8, p.y + 8);
-    });
-
-    // Enemies
-    enemies.forEach(e => {
-        ctx.shadowBlur = 20; ctx.shadowColor = e.color;
-        ctx.strokeStyle = e.color;
-        ctx.lineWidth = 3;
-        ctx.save();
-        ctx.translate(e.x, e.y);
-        ctx.rotate(e.angle);
-        ctx.beginPath();
-        if(e.hp > 1) { // Tank shape (Hexagon)
-            for(let i=0; i<6; i++) {
-                ctx.lineTo(e.size * Math.cos(i * Math.PI / 3), e.size * Math.sin(i * Math.PI / 3));
-            }
-        } else { // Normal shape (Diamond)
-            ctx.moveTo(0, -e.size); ctx.lineTo(e.size, 0); ctx.lineTo(0, e.size); ctx.lineTo(-e.size, 0);
-        }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
-        ctx.restore();
-    });
-
-    // Particles
-    particles.forEach(p => {
-        ctx.shadowBlur = 10; ctx.shadowColor = p.color;
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.life;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
-    });
-    ctx.globalAlpha = 1;
-
-    // Player
-    if (playing) {
-        ctx.shadowBlur = 25; ctx.shadowColor = player.color;
-        ctx.fillStyle = player.color;
-        ctx.beginPath();
-        ctx.moveTo(player.x, player.y - player.height);
-        ctx.lineTo(player.x + player.width/2, player.y + player.height/2);
-        ctx.lineTo(player.x, player.y);
-        ctx.lineTo(player.x - player.width/2, player.y + player.height/2);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    ctx.restore(); // Restore global context for text
-
-    // Floating Texts (Drawn without neon blur for readability)
-    floatingTexts.forEach(ft => {
-        ctx.fillStyle = ft.color;
-        ctx.globalAlpha = Math.max(0, ft.life);
-        ctx.font = `bold ${ft.size}px Orbitron`;
-        ctx.textAlign = "center";
-        ctx.fillText(ft.text, ft.x, ft.y);
-    });
-    ctx.globalAlpha = 1;
-
-    // GAME OVER SCREEN
-    if (!playing) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "#ff0055";
-        ctx.shadowBlur = 30; ctx.shadowColor = "#ff0055";
-        ctx.textAlign = "center";
-        ctx.font = "bold 60px Orbitron";
-        ctx.fillText("GAME OVER", w/2, h/2 - 20);
-        
-        ctx.fillStyle = "#fff";
-        ctx.shadowBlur = 10; ctx.shadowColor = "#fff";
-        ctx.font = "20px Orbitron";
-        ctx.fillText(`Final Score: ${score}`, w/2, h/2 + 30);
-        ctx.fillText("CLICK OR TAP TO RESTART", w/2, h/2 + 80);
-    }
-}
-
-function loop() {
-    update();
-    draw();
     requestAnimationFrame(loop);
 }
-
-// Event Listeners
-window.addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-window.addEventListener("touchmove", e => { 
-    mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; 
-    e.preventDefault(); 
-}, { passive: false });
-
-window.addEventListener("mousedown", () => { if(!playing) init(); });
-window.addEventListener("touchstart", () => { if(!playing) init(); });
-
-init();
 loop();
+
+// ---------- GAME OVER ----------
+function gameOver(){
+    if(score>high){
+        localStorage.setItem("high",score);
+    }
+    alert("GAME OVER\nScore: "+score);
+    location.reload();
+}
+
+// ---------- CONTROLS ----------
+window.addEventListener("mousemove",e=>{
+    mouse.x=e.clientX;
+    targetX=e.clientX;
+});
+
+window.addEventListener("touchmove",e=>{
+    mouse.x=e.touches[0].clientX;
+    targetX=e.touches[0].clientX;
+});
 </script>
+
 </body>
 </html>
